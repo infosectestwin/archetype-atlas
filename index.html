@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE ARCHETYPE ATLAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+        }
+
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .frosted-onyx {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .wordmark {
+            letter-spacing: 0.2em;
+            font-weight: 300;
+        }
+
+        .status-glow {
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .similarity-glow {
+            text-shadow: 0 0 15px rgba(50, 255, 126, 0.6);
+        }
+
+        .cyber-lime-glow {
+            color: #32ff7e;
+            text-shadow: 0 0 10px rgba(50, 255, 126, 0.4);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Custom toggle styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #ffffff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Radar Chart styling */
+        .radar-grid {
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 1;
+            fill: none;
+        }
+        .radar-axis {
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 1;
+        }
+        .radar-user {
+            fill: rgba(50, 255, 126, 0.3);
+            stroke: #32ff7e; /* Cyber Lime */
+            stroke-width: 2;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .radar-archetype {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.5); /* Frosted White */
+            stroke-width: 1.5;
+            stroke-dasharray: 4 4;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .radar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            fill: #737373;
+            letter-spacing: 0.1em;
+        }
+
+        /* Scanning Animation */
+        @keyframes scan {
+            0% { top: -10%; opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { top: 110%; opacity: 0; }
+        }
+        .scanner {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #32ff7e, transparent);
+            box-shadow: 0 0 15px #32ff7e;
+            z-index: 10;
+            display: none;
+            animation: scan 2s linear infinite;
+        }
+
+        /* Animation */
+        @keyframes bloom {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .bloom {
+            animation: bloom 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-neutral-900 via-black to-black">
+
+    <!-- System Status -->
+    <div class="fixed top-6 right-6 flex items-center gap-4 bg-black/40 px-4 py-2 rounded-full border border-white/5 backdrop-blur-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-green-500 status-glow animate-pulse"></div>
+            <span class="text-[8px] font-bold tracking-[0.2em] text-neutral-400 uppercase whitespace-nowrap">
+                GEMINI_CORE: ACTIVE | ATLAS_DATA: LOADED
+            </span>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="mb-12 text-center">
+        <h1 class="wordmark text-sm md:text-xl text-white opacity-80 mb-2 uppercase">THE ARCHETYPE ATLAS</h1>
+        <p class="text-xs text-neutral-500 uppercase tracking-widest">Digital Mirror // Synthesis Engine</p>
+    </header>
+
+    <!-- Main Controller -->
+    <main class="w-full max-w-2xl space-y-8">
+        <div class="liquid-glass rounded-3xl p-8 shadow-2xl">
+            <form id="atlasForm" class="space-y-8">
+                <!-- Biometric Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-tighter text-neutral-500 flex items-center gap-2">
+                            <i data-lucide="ruler" class="w-3 h-3"></i> Height (cm)
+                        </label>
+                        <input type="number" id="height" required step="0.1" 
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder-neutral-700 transition-all"
+                            placeholder="180.0">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-tighter text-neutral-500 flex items-center gap-2">
+                            <i data-lucide="weight" class="w-3 h-3"></i> Weight (kg)
+                        </label>
+                        <input type="number" id="weight" required step="0.1" 
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder-neutral-700 transition-all"
+                            placeholder="75.0">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase tracking-tighter text-neutral-500 flex items-center gap-2">
+                            <i data-lucide="expand" class="w-3 h-3"></i> Wingspan (cm)
+                        </label>
+                        <input type="number" id="wingspan" required step="0.1" 
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder-neutral-700 transition-all"
+                            placeholder="185.0">
+                    </div>
+                </div>
+
+                <!-- Context Toggle -->
+                <div class="flex items-center justify-between border-t border-white/5 pt-6">
+                    <span class="text-[10px] uppercase tracking-widest text-neutral-400">Context: Olympic // Paralympic</span>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="toggle" id="toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-neutral-800 border-4 border-transparent appearance-none cursor-pointer outline-none transition-all"/>
+                        <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-white/10 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <!-- Action -->
+                <button type="submit" id="submitBtn"
+                    class="w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.3em] rounded-xl hover:bg-neutral-200 transition-all flex items-center justify-center gap-3">
+                    <span id="btnText">Initiate Synthesis</span>
+                    <i id="btnIcon" data-lucide="cpu" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Card -->
+        <div id="resultCard" class="hidden space-y-8">
+            <div class="frosted-onyx rounded-3xl p-10 border-l-4 border-l-white/20 bloom">
+                <div class="flex items-start justify-between mb-10">
+                    <div>
+                        <h2 id="archetypeTitle" class="text-3xl font-bold text-white tracking-tight uppercase">THE POWERHOUSE</h2>
+                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">Matched Archetype // Confidence: <span id="confidence">98</span>%</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                        <span class="text-[10px] uppercase tracking-tighter text-neutral-300">Rowen 🐾</span>
+                        <span class="text-[8px] text-neutral-600">Lead Architect</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-12">
+                    <!-- Insight Text -->
+                    <p id="insightText" class="text-base leading-relaxed text-neutral-300 font-light italic text-center max-w-xl mx-auto">
+                        Analysis pending synthesis subsystem execution...
+                    </p>
+
+                    <!-- Matched Athletes -->
+                    <div class="grid grid-cols-2 gap-8 border-t border-b border-white/5 py-8">
+                        <div class="text-center space-y-2">
+                            <p class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Olympic Match</p>
+                            <p id="olympicMatch" class="text-sm font-bold cyber-lime-glow mono uppercase tracking-wider">Loading...</p>
+                        </div>
+                        <div class="text-center space-y-2 border-l border-white/5">
+                            <p class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Paralympic Match</p>
+                            <p id="paralympicMatch" class="text-sm font-bold cyber-lime-glow mono uppercase tracking-wider">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Similarity Radar -->
+                    <div class="flex flex-col items-center gap-8 py-4">
+                        <h3 class="text-xs uppercase tracking-[0.4em] text-neutral-500">SIMILARITY RADAR</h3>
+                        
+                        <div class="relative w-[400px] h-[400px] liquid-glass rounded-full flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden">
+                            <!-- Scanner Line -->
+                            <div id="scanner" class="scanner"></div>
+                            
+                            <svg id="radarChart" width="360" height="360" viewBox="0 0 400 400" class="overflow-visible">
+                                <!-- Grid Circles (-3 to +3 Z-scores) -->
+                                <circle cx="200" cy="200" r="30" class="radar-grid" />
+                                <circle cx="200" cy="200" r="90" class="radar-grid" /> <!-- 0 Z-score -->
+                                <circle cx="200" cy="200" r="150" class="radar-grid" />
+                                <circle cx="200" cy="200" r="180" class="radar-grid" /> <!-- +3 Z-score -->
+                                
+                                <!-- Axis Lines -->
+                                <line x1="200" y1="20" x2="200" y2="380" class="radar-axis" />
+                                <line x1="44" y1="290" x2="356" y2="110" class="radar-axis" />
+                                <line x1="44" y1="110" x2="356" y2="290" class="radar-axis" />
+                                
+                                <!-- Labels -->
+                                <text x="200" y="10" text-anchor="middle" class="radar-label">HEIGHT</text>
+                                <text x="25" y="305" text-anchor="middle" class="radar-label">WEIGHT</text>
+                                <text x="375" y="305" text-anchor="middle" class="radar-label">WINGSPAN</text>
+                                
+                                <!-- Polylines -->
+                                <path id="archetypePath" class="radar-archetype" d="" />
+                                <path id="userPath" class="radar-user" d="" />
+                            </svg>
+
+                            <!-- Legend -->
+                            <div class="absolute bottom-6 flex gap-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-0.5 bg-[#32ff7e]"></div>
+                                    <span class="text-[8px] uppercase tracking-widest text-neutral-400">YOUR PROFILE</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-0.5 border-t border-dashed border-white/50"></div>
+                                    <span class="text-[8px] uppercase tracking-widest text-neutral-400">ARCHETYPE AVERAGE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Similarity Score -->
+                        <div class="text-center">
+                            <p class="text-[10px] uppercase tracking-[0.4em] text-neutral-600 mb-1">Similarity Index</p>
+                            <h4 id="similarityScore" class="text-4xl font-bold mono text-[#32ff7e] similarity-glow">98.4%</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice of the Architect -->
+            <div class="liquid-glass rounded-3xl p-8 border border-white/5 bloom delay-300">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <i data-lucide="message-square" class="w-4 h-4 text-neutral-400"></i>
+                    </div>
+                    <h3 class="text-xs uppercase tracking-[0.4em] text-white">Voice of the Architect</h3>
+                </div>
+                <div class="space-y-3">
+                    <p id="architectNote" class="text-xs font-bold text-[#32ff7e] tracking-wider uppercase mono">
+                        [Architect's Note]: Loading alignment data...
+                    </p>
+                    <p id="rowenComment" class="text-sm text-neutral-400 leading-relaxed font-light italic">
+                        "Meow! As Lead Architect, I have verified your biometric alignment. Your structural blueprint reflects a shared lineage of excellence. Whether Olympic or Paralympic, the physics of power remain constant."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-12 text-[9px] text-neutral-700 uppercase tracking-widest text-center">
+        Statistical Parity Protocol v1.0.4 // Zero Retention Policy Active
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('atlasForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const resultCard = document.getElementById('resultCard');
+        const scanner = document.getElementById('scanner');
+
+        function getPoint(zScore, angle) {
+            const cx = 200, cy = 200;
+            const maxRadius = 180;
+            const clampedZ = Math.min(Math.max(zScore, -3), 3);
+            const r = ((clampedZ + 3) / 6) * maxRadius;
+            
+            const rad = (angle - 90) * (Math.PI / 180);
+            return {
+                x: cx + r * Math.cos(rad),
+                y: cy + r * Math.sin(rad)
+            };
+        }
+
+        function updateRadar(userZ, archetypeZ) {
+            const angles = [0, 120, 240]; 
+            
+            const userPts = [
+                getPoint(userZ.height, angles[0]),
+                getPoint(userZ.weight, angles[1]),
+                getPoint(userZ.wingspan, angles[2])
+            ];
+            
+            const archPts = [
+                getPoint(archetypeZ.height, angles[0]),
+                getPoint(archetypeZ.weight, angles[1]),
+                getPoint(archetypeZ.wingspan, angles[2])
+            ];
+
+            const userPath = `M ${userPts[0].x},${userPts[0].y} L ${userPts[1].x},${userPts[1].y} L ${userPts[2].x},${userPts[2].y} Z`;
+            const archPath = `M ${archPts[0].x},${archPts[0].y} L ${archPts[1].x},${archPts[1].y} L ${archPts[2].x},${archPts[2].y} Z`;
+            
+            document.getElementById('userPath').setAttribute('d', userPath);
+            document.getElementById('archetypePath').setAttribute('d', archPath);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            btnText.innerText = "Analyzing...";
+            btnIcon.setAttribute('data-lucide', 'loader-2');
+            btnIcon.classList.add('animate-spin');
+            lucide.createIcons();
+            
+            // Show Scanner during analysis
+            resultCard.classList.remove('hidden');
+            scanner.style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+            const payload = {
+                athlete_id: 0,
+                name: "User",
+                height_cm: parseFloat(document.getElementById('height').value),
+                weight_kg: parseFloat(document.getElementById('weight').value),
+                wingspan_cm: parseFloat(document.getElementById('wingspan').value),
+                classification_code: "",
+                sport: "User Input",
+                year: 2026,
+                is_paralympic: document.getElementById('toggle').checked
+            };
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Synthesis Error");
+                }
+
+                const result = await response.json();
+
+                // Populate Result Card
+                document.getElementById('archetypeTitle').innerText = result.archetype_match.archetype_name;
+                document.getElementById('confidence').innerText = (result.archetype_match.confidence_score * 100).toFixed(0);
+                document.getElementById('insightText').innerText = result.atlas_insight.insight_text;
+                document.getElementById('similarityScore').innerText = result.similarity_score + "%";
+                
+                // Populate Matches & Notes
+                document.getElementById('olympicMatch').innerText = result.olympic_match;
+                document.getElementById('paralympicMatch').innerText = result.paralympic_match;
+                document.getElementById('architectNote').innerText = `[Architect's Note]: ${result.architect_note}`;
+
+                updateRadar(result.user_z_scores, result.archetype_z_scores);
+                
+                // Finalize Animation
+                scanner.style.display = 'none';
+                
+            } catch (err) {
+                alert(`Rowen: 'Synthesis failed.' ${err.message}`);
+                resultCard.classList.add('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.innerText = "Initiate Synthesis";
+                btnIcon.setAttribute('data-lucide', 'cpu');
+                btnIcon.classList.remove('animate-spin');
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.venv/
+*.pyc
+.history
+.gemini
+historical_athletes.csv
+.pytest_cache/
+env/
