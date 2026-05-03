@@ -6,7 +6,48 @@
 ## 1. Executive Summary: The Digital Mirror
 The Archetype Atlas is a high-fidelity analytical platform designed for the Team USA Hackathon. It utilizes a 'Digital Mirror'—a sophisticated biometric alignment engine—to map modern physical profiles against 120 years of Team USA history. Our mission is to demonstrate the **Collective Power** of the American spirit by proving that the mechanical archetypes of elite performance transcend the boundary between Olympic and Paralympic competition.
 
-## 2. Security by Design: Privacy-First Architecture
+## 2. System Architecture: Stateless Data Flow
+The Atlas is engineered for high-precision, privacy-first biometric alignment. The following diagram illustrates the unidirectional, in-memory processing pipeline:
+
+```mermaid
+graph TD
+    subgraph Client_Layer [Onyx Interface]
+        UI[Onyx Liquid Glass UI]
+    end
+
+    subgraph API_Gateway [FastAPI Hub]
+        EP[POST /analyze]
+    end
+
+    subgraph Core_Subsystems [The Atlas Core]
+        AE[Atlas Engine]
+        DB[(120yr Historical CSV)]
+    end
+
+    subgraph Intelligence_Layer [AI Synthesis]
+        GM[Gemini 1.5 Pro/Flash]
+    end
+
+    UI -- "Biometric Vector (JSON)" --> EP
+    EP -- "Stateless Trigger" --> AE
+    AE -- "Euclidean Search" --> DB
+    DB -- "Historical Context" --> AE
+    AE -- "In-Memory Inference" --> GM
+    GM -- "Atlas Insight + Z-Scores" --> AE
+    AE -- "Structured Response" --> UI
+
+    %% Styling
+    style UI fill:#1a1a1a,stroke:#32ff7e,stroke-width:2px,color:#fff
+    style EP fill:#1a1a1a,stroke:#fff,stroke-opacity:0.3,color:#fff
+    style AE fill:#1a1a1a,stroke:#fff,stroke-width:2px,color:#fff
+    style DB fill:#0a0a0a,stroke:#fff,stroke-opacity:0.2,color:#aaa
+    style GM fill:#1a1a1a,stroke:#32ff7e,stroke-width:2px,color:#fff
+    
+    classDef stateless font-style:italic,color:#32ff7e;
+    class UI,EP,AE,GM stateless;
+```
+
+## 3. Security by Design: Privacy-First Architecture
 In an era of biometric sensitivity, the Atlas is built on a foundation of absolute privacy.
 - **Stateless Processing:** All user biometrics are processed in-memory.
 - **Zero-Persistence Policy:** User data is never stored, logged, or cached. Once the 'Atlas Insight' is synthesized, the biometric input is purged from the system state.
