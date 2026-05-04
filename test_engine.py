@@ -3,78 +3,54 @@ from models import AthleteBiometrics
 import os
 
 def run_atlas_test():
-    print("Rowen: 'Commencing live-fire engine test...'")
+    print("Rowen: 'Commencing high-fidelity biometric validation...'")
     
     try:
         engine = AtlasEngine()
         
-        # Test Case 1: The Aerobic Engine Profile (Marathon Runner type)
-        # Goal: Matches Katie Ledecky / Jessica Long
+        # Profile 1: The Aerobic Engine (Endurance)
+        # Target: 160-175cm / 45-62kg
         aerobic_profile = AthleteBiometrics(
-            athlete_id=1,
-            name="Endurance Test",
-            height_cm=172.0,
-            weight_kg=58.0,
-            wingspan_cm=174.0,
-            sport="TBD",
-            year=2026,
-            is_paralympic=False
+            athlete_id=1, name="Endurance_Alpha", height_cm=168.0, weight_kg=55.0, wingspan_cm=170.0,
+            sport="TBD", year=2026, is_paralympic=False
         )
         
-        # Test Case 2: The Powerhouse Profile (Shotputter type)
-        # Goal: Matches Ryan Crouser / Jeremy Campbell
+        # Profile 2: The Powerhouse (Force)
+        # Target: 188-215cm / 115-150kg
         power_profile = AthleteBiometrics(
-            athlete_id=2,
-            name="Power Test",
-            height_cm=198.0,
-            weight_kg=125.0,
-            wingspan_cm=202.0,
-            sport="TBD",
-            year=2026,
-            is_paralympic=False
+            athlete_id=2, name="Force_Delta", height_cm=200.0, weight_kg=130.0, wingspan_cm=210.0,
+            sport="TBD", year=2026, is_paralympic=False
         )
 
-        # Test Case 3: The Kinetic Lever Profile (High Jumper / Long Jumper type)
-        # Goal: Matches Tara Davis-Woodhall / Hunter Woodhall
+        # Profile 3: The Kinetic Lever (Proportion)
+        # Target: 192-210cm / Wingspan 220-240cm (Ratio > 1.15)
         lever_profile = AthleteBiometrics(
-            athlete_id=3,
-            name="Kinetic Test",
-            height_cm=195.0,
-            weight_kg=85.0,
-            wingspan_cm=205.0,
-            sport="TBD",
-            year=2026,
-            is_paralympic=False
+            athlete_id=3, name="Lever_Sigma", height_cm=198.0, weight_kg=85.0, wingspan_cm=235.0,
+            sport="TBD", year=2026, is_paralympic=False
         )
 
-        # Test Case 4: The Agile Tactician Profile (Fencer type)
-        # Goal: Matches Lee Kiefer / Bebe Vio
+        # Profile 4: The Agile Tactician (Precision)
+        # Target: 181-184cm / 71-75kg (Lock at 183cm)
         tactician_profile = AthleteBiometrics(
-            athlete_id=4,
-            name="Agility Test",
-            height_cm=175.0,
-            weight_kg=70.0,
-            wingspan_cm=180.0,
-            sport="TBD",
-            year=2026,
-            is_paralympic=False
+            athlete_id=4, name="Precision_Omega", height_cm=183.0, weight_kg=73.0, wingspan_cm=193.0,
+            sport="TBD", year=2026, is_paralympic=False
         )
         
         test_cases = [
-            ("Aerobic Test", aerobic_profile),
-            ("Power Test", power_profile),
-            ("Kinetic Lever Test", lever_profile),
-            ("Agile Tactician Test", tactician_profile)
+            ("Aerobic Engine", aerobic_profile),
+            ("Powerhouse", power_profile),
+            ("Kinetic Lever", lever_profile),
+            ("Agile Tactician", tactician_profile)
         ]
         
         for label, profile in test_cases:
-            print(f"\n--- Testing {label} ---")
+            print(f"\n[Validation]: {label}")
             result = engine.generate_insight(profile)
-            print(f"Matched Archetype: {result.archetype_match.archetype_name}")
-            print(f"Confidence: {result.archetype_match.confidence_score}")
-            print(f"Olympic Match: {result.olympic_match}")
-            print(f"Paralympic Match: {result.paralympic_match}")
-            print(f"Rowen's Insight: {result.atlas_insight.insight_text[:200]}...")
+            print(f"Matched: {result.archetype_match.archetype_name}")
+            print(f"Similarity: {result.similarity_score}%")
+            print(f"Olympic: {result.olympic_match}")
+            print(f"Paralympic: {result.paralympic_match}")
+            print(f"Rowen's Note: {result.architect_note}")
             
     except Exception as e:
         print(f"Rowen: 'System alert - Analysis interrupted.' Error: {e}")

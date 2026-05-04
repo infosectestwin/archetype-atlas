@@ -464,10 +464,12 @@
             document.getElementById('paralympicMatch').innerText = "Analyzing National Archives...";
             resultCard.classList.remove('pulse-lime');
 
+            // The Trigger: Re-query icon and initiate spinner
+            const activeIcon = document.getElementById('btnIcon');
             submitBtn.disabled = true;
-            btnText.innerText = "Analyzing...";
-            btnIcon.setAttribute('data-lucide', 'loader-2');
-            btnIcon.classList.add('animate-spin');
+            btnText.innerText = "Reading Atlas...";
+            activeIcon.setAttribute('data-lucide', 'loader-2');
+            activeIcon.classList.add('animate-spin');
             lucide.createIcons();
             
             // Show Scanner during analysis
@@ -529,14 +531,13 @@
                 
                 resultCard.classList.add('hidden');
             } finally {
-                // The State Reset: Execution in finally block
+                // The Cleanup: Ensure spinner is removed and state is updated regardless of outcome
                 submitBtn.disabled = false;
-                btnText.innerText = analysisPerformed ? "Update Analysis" : "Initiate Synthesis";
+                btnText.innerText = "Update Analysis";
                 
-                // Ensure spinner is removed and icon is reset
-                const currentIcon = document.getElementById('btnIcon');
-                currentIcon.setAttribute('data-lucide', 'cpu');
-                currentIcon.classList.remove('animate-spin');
+                const finalIcon = document.getElementById('btnIcon');
+                finalIcon.setAttribute('data-lucide', 'cpu');
+                finalIcon.classList.remove('animate-spin');
                 lucide.createIcons();
             }
         });

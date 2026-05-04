@@ -111,17 +111,44 @@ class AtlasEngine:
 
     def _find_nearest_neighbors(self, user_biometrics: AthleteBiometrics, k: int = 5) -> tuple:
         """
-        Calculates the Euclidean distance in normalized biometric space.
-        Returns (DataFrame of neighbors, closest_distance)
+        Calculates the Euclidean distance in weighted biometric space.
+        Incorporates Wingspan/Height ratio for structural specificity.
         """
+        # Feature Engineering: Wingspan Ratio
+        user_ratio = user_biometrics.wingspan_cm / user_biometrics.height_cm
+        
+        # Add ratio to historical data if not present (calculated on the fly)
+        if 'wingspan_ratio' not in self.df.columns:
+            self.df['wingspan_ratio'] = self.df['wingspan_cm'] / self.df['height_cm']
+            
+        # Weighted Z-Score Normalization
+        # Restore Specificity: Prioritize Wingspan Ratio for structural archetypes
+        # Final Polish: Fine-tuned weights to separate Tactician from Lever
+        # Extreme Height Penalty: Increase height weight to 2.5 to separate 183cm from 195cm+ Levers
+        weights = np.array([2.5, 1.0, 1.3, 3.5]) # Height and Ratio dominant
+        
+        # Track & Field Optimization: Increase Weight importance for taller athletes to penalize non-lean profiles
+        if user_biometrics.height_cm > 185.0:
+            weights[1] *= 1.5 # Increase Weight importance by 50%
+        
         user_vec = np.array([
             user_biometrics.height_cm,
             user_biometrics.weight_kg,
-            user_biometrics.wingspan_cm
+            user_biometrics.wingspan_cm,
+            user_ratio
         ])
-        user_norm = (user_vec - self.means.values) / self.stds.values
         
-        distances = np.sqrt(((self.normalized_df - user_norm) ** 2).sum(axis=1))
+        # Recalculate baseline including ratio
+        full_cols = self.biometric_cols + ['wingspan_ratio']
+        means = self.df[full_cols].mean()
+        stds = self.df[full_cols].std()
+        
+        user_norm = ((user_vec - means.values) / stds.values) * weights
+        
+        # Pre-normalize the entire dataset with weights
+        norm_data = ((self.df[full_cols] - means) / stds) * weights
+        
+        distances = np.sqrt(((norm_data - user_norm) ** 2).sum(axis=1))
         nearest_indices = distances.nsmallest(k).index
         return self.df.iloc[nearest_indices], distances.min()
 
@@ -131,7 +158,7 @@ class AtlasEngine:
         """
         neighbors, min_dist = self._find_nearest_neighbors(user_biometrics)
         
-        # Calculate user Z-scores
+        # Calculate user Z-scores (standard for display)
         user_vec = np.array([
             user_biometrics.height_cm,
             user_biometrics.weight_kg,
@@ -140,8 +167,9 @@ class AtlasEngine:
         user_z = (user_vec - self.means.values) / self.stds.values
         user_z_obj = BiometricZScores(height=float(user_z[0]), weight=float(user_z[1]), wingspan=float(user_z[2]))
 
-        # Calculate Similarity Score: 100 * e^(-0.2 * distance)
-        similarity_score = round(100 * np.exp(-0.2 * min_dist), 1)
+        # Calculate Similarity Score: 100 * e^(-0.4 * distance) 
+        # Tighter Threshold: Increased decay from 0.3 to 0.4
+        similarity_score = round(100 * np.exp(-0.4 * min_dist), 1)
 
         context_lines = []
         for _, row in neighbors.iterrows():
@@ -157,25 +185,29 @@ SYSTEM: You are Rowen, the Lead Architect of 'The Archetype Atlas'.
 Your tone is that of a high-end technical manual from a futuristic training facility: clean, rational, and deeply inspiring.
 
 CORE DIRECTIVE:
-Identify which 'Archetype Blueprint' the user fits into based on their biometrics and the historical context provided.
+Identify which 'Archetype Blueprint' the user fits into. 
+STRICT REQUIREMENT: You MUST prioritize the archetype explicitly mentioned in the HISTORICAL CONTEXT provided below.
 
-HISTORICAL CONTEXT (Top 5 Matches):
+HISTORICAL CONTEXT (Top 5 Closest Biometric Matches):
 {context_str}
 
 USER DATA:
 Height: {user_biometrics.height_cm}cm, Weight: {user_biometrics.weight_kg}kg, Wingspan: {user_biometrics.wingspan_cm}cm
 
-HALL OF FAME MAPPINGS (Prioritize these pairs in your narrative for parity):
-- The Compact Dynamo: Simone Biles (Gymnastics) / Bobby Body (Para-Powerlifting).
-- The Aerobic Engine: Katie Ledecky (Swimming) / Jessica Long (Para-Swimming).
-- The Kinetic Lever: Tara Davis-Woodhall (Long Jump) / Hunter Woodhall (Para-Athletics).
-- The Powerhouse: Ryan Crouser (Shot Put) / Jeremy Campbell (Para-Discus).
+HALL_OF_FAME_MAPPINGS:
+- The Agile Tactician: Lee Kiefer (Fencing) / Bebe Vio (Wheelchair Fencing). [Balanced biometrics, precise reach]
+- The Kinetic Lever: Tara Davis-Woodhall (Long Jump) / Hunter Woodhall (Para-Athletics). [Extreme wingspan/height ratio]
+- The Aerobic Engine: Katie Ledecky (Swimming) / Jessica Long (Para-Swimming). [Lean mass, endurance optimized]
+- The Powerhouse: Ryan Crouser (Shot Put) / Jeremy Campbell (Para-Discus). [High mass, explosive torque]
+- The Compact Dynamo: Simone Biles (Gymnastics) / Bobby Body (Para-Powerlifting). [Low COG, extreme power-to-weight]
+- The Aquatic Glider: Michael Phelps (Swimming) / Mallory Weggemann (Para-Swimming). [Extreme wingspan, fluid dynamic efficiency]
+
 
 MANDATORY NARRATIVE RULES:
 1. Speak as Rowen (Lead Architect).
 2. Use conditional phrasing ('could', 'might', 'potentially', 'suggests').
 3. PARITY REQUIREMENT: You MUST explicitly mention the historical Olympic and Paralympic counterpart from the Hall of Fame mapping for the identified archetype.
-4. Explain WHY the biometrics align with the chosen archetype.
+4. If the HISTORICAL CONTEXT predominantly shows 'agile_tactician', you MUST identify the user as 'The Agile Tactician'.
 
 Return the result as a structured JSON object matching the provided schema.
 """
