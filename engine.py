@@ -3,7 +3,7 @@ import numpy as np
 import os
 from dotenv import load_dotenv
 from google import genai
-from models import AthleteBiometrics, ArchetypeMatch, AtlasInsight, EngineOutput, BiometricZScores
+from models import AthleteBiometrics, ArchetypeMatch, AtlasInsight, EngineOutput, BiometricZScores, AISynthesis
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,34 +14,64 @@ class InitializationError(Exception):
 
 # Hall of Fame Mappings
 HALL_OF_FAME = {
-    "The Compact Dynamo": {
-        "olympic": "Simone Biles (Gymnastics)",
-        "paralympic": "Bobby Body (Para-Powerlifting)",
+    "compact_dynamo": {
+        "olympic": "Simone Biles",
+        "paralympic": "Bobby Body",
         "note": "Their shared low center of gravity and extreme power-to-weight ratio create a near-perfect biomechanical parity."
     },
-    "The Aerobic Engine": {
-        "olympic": "Katie Ledecky (Swimming)",
-        "paralympic": "Jessica Long (Para-Swimming)",
+    "The Compact Dynamo": {
+        "olympic": "Simone Biles",
+        "paralympic": "Bobby Body",
+        "note": "Their shared low center of gravity and extreme power-to-weight ratio create a near-perfect biomechanical parity."
+    },
+    "aerobic_engine": {
+        "olympic": "Katie Ledecky",
+        "paralympic": "Jessica Long",
         "note": "Their Hydrodynamic efficiency and lean mass profile exemplify the 'Aerobic Engine' blueprint across disciplines."
     },
-    "The Kinetic Lever": {
-        "olympic": "Tara Davis-Woodhall (Long Jump)",
-        "paralympic": "Hunter Woodhall (Para-Athletics)",
+    "The Aerobic Engine": {
+        "olympic": "Katie Ledecky",
+        "paralympic": "Jessica Long",
+        "note": "Their Hydrodynamic efficiency and lean mass profile exemplify the 'Aerobic Engine' blueprint across disciplines."
+    },
+    "kinetic_lever": {
+        "olympic": "Tara Davis-Woodhall",
+        "paralympic": "Hunter Woodhall",
         "note": "Mechanical leverage provided by their long-lever biometric profiles suggests a unified blueprint for horizontal propulsion."
     },
-    "The Powerhouse": {
-        "olympic": "Ryan Crouser (Shot Put)",
-        "paralympic": "Jeremy Campbell (Para-Discus)",
+    "The Kinetic Lever": {
+        "olympic": "Tara Davis-Woodhall",
+        "paralympic": "Hunter Woodhall",
+        "note": "Mechanical leverage provided by their long-lever biometric profiles suggests a unified blueprint for horizontal propulsion."
+    },
+    "powerhouse": {
+        "olympic": "Ryan Crouser",
+        "paralympic": "Jeremy Campbell",
         "note": "High-mass stability and explosive torque generation anchor both athletes within the 'Powerhouse' archetype."
     },
-    "The Aquatic Glider": {
-        "olympic": "Michael Phelps (Swimming)",
-        "paralympic": "Mallory Weggemann (Para-Swimming)",
+    "The Powerhouse": {
+        "olympic": "Ryan Crouser",
+        "paralympic": "Jeremy Campbell",
+        "note": "High-mass stability and explosive torque generation anchor both athletes within the 'Powerhouse' archetype."
+    },
+    "aquatic_glider": {
+        "olympic": "Michael Phelps",
+        "paralympic": "Mallory Weggemann",
         "note": "Extreme wingspan-to-height ratios potentially indicate a shared mastery of fluid dynamics."
     },
+    "The Aquatic Glider": {
+        "olympic": "Michael Phelps",
+        "paralympic": "Mallory Weggemann",
+        "note": "Extreme wingspan-to-height ratios potentially indicate a shared mastery of fluid dynamics."
+    },
+    "agile_tactician": {
+        "olympic": "Lee Kiefer",
+        "paralympic": "Bebe Vio",
+        "note": "Balanced biometrics and superior reaction mechanics suggest a unified tactical profile."
+    },
     "The Agile Tactician": {
-        "olympic": "Lee Kiefer (Fencing)",
-        "paralympic": "Bebe Vio (Wheelchair Fencing)",
+        "olympic": "Lee Kiefer",
+        "paralympic": "Bebe Vio",
         "note": "Balanced biometrics and superior reaction mechanics suggest a unified tactical profile."
     }
 }
@@ -147,7 +177,7 @@ MANDATORY NARRATIVE RULES:
 3. PARITY REQUIREMENT: You MUST explicitly mention the historical Olympic and Paralympic counterpart from the Hall of Fame mapping for the identified archetype.
 4. Explain WHY the biometrics align with the chosen archetype.
 
-Return the result as a structured EngineOutput.
+Return the result as a structured JSON object matching the provided schema.
 """
 
         response = self.client.models.generate_content(
@@ -155,38 +185,63 @@ Return the result as a structured EngineOutput.
             contents=prompt,
             config={
                 "response_mime_type": "application/json",
-                "response_schema": EngineOutput,
+                "response_schema": AISynthesis,
             }
         )
         
-        output = response.parsed
+        ai_data = response.parsed
+        if not ai_data:
+            raise Exception("Rowen: 'Synthesis Subsystem timed out. Failed to parse AI response.'")
+            
+        # Get Hall of Fame data with Case-Insensitive Fuzzy Matching
+        archetype_key = ai_data.archetype_name.strip()
         
-        # Inject metadata
-        output.user_z_scores = user_z_obj
-        output.similarity_score = similarity_score
-        
-        # Get Hall of Fame data
-        hof_entry = HALL_OF_FAME.get(output.archetype_match.archetype_name, {
-            "olympic": "N/A", "paralympic": "N/A", "note": "Shared biomechanical lineage confirmed."
+        # Create a normalized lookup map
+        normalized_hof = {k.lower(): v for k, v in HALL_OF_FAME.items()}
+        hof_entry = normalized_hof.get(archetype_key.lower(), {
+            "olympic": "Analyzing National Archives...", 
+            "paralympic": "Analyzing National Archives...", 
+            "note": "Shared biomechanical lineage confirmed."
         })
-        output.olympic_match = hof_entry["olympic"]
-        output.paralympic_match = hof_entry["paralympic"]
-        output.architect_note = hof_entry["note"]
         
         # Calculate archetype average Z-scores
-        archetype_name = output.archetype_match.archetype_name
-        archetype_data = self.normalized_df[self.df['archetype'] == archetype_name]
+        # Try matching by slug first
+        archetype_data = self.normalized_df[self.df['archetype'] == archetype_key.lower()]
+        
+        if archetype_data.empty:
+            # Fallback: Try searching for keywords in the archetype column (which contains slugs)
+            keywords = archetype_key.lower().split()
+            mask = self.df['archetype'].str.contains('|'.join(keywords))
+            archetype_data = self.normalized_df[mask]
+            
         if not archetype_data.empty:
             avg_z = archetype_data.mean()
-            output.archetype_z_scores = BiometricZScores(
+            archetype_z_obj = BiometricZScores(
                 height=float(avg_z['height_cm']), 
                 weight=float(avg_z['weight_kg']), 
                 wingspan=float(avg_z['wingspan_cm'])
             )
         else:
-            output.archetype_z_scores = user_z_obj
+            archetype_z_obj = user_z_obj
             
-        return output
+        # Assemble final EngineOutput
+        return EngineOutput(
+            archetype_match=ArchetypeMatch(
+                archetype_name=ai_data.archetype_name,
+                confidence_score=ai_data.confidence_score,
+                shared_traits=ai_data.shared_traits
+            ),
+            atlas_insight=AtlasInsight(
+                insight_text=ai_data.insight_text,
+                matched_archetype=ai_data.archetype_name
+            ),
+            user_z_scores=user_z_obj,
+            archetype_z_scores=archetype_z_obj,
+            similarity_score=similarity_score,
+            olympic_match=hof_entry["olympic"],
+            paralympic_match=hof_entry["paralympic"],
+            architect_note=hof_entry["note"]
+        )
 
 if __name__ == "__main__":
     try:

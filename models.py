@@ -37,6 +37,12 @@ class BiometricZScores(BaseModel):
     weight: float
     wingspan: float
 
+class AISynthesis(BaseModel):
+    archetype_name: str
+    confidence_score: float = Field(..., ge=0, le=1)
+    shared_traits: List[str]
+    insight_text: str
+
 class EngineOutput(BaseModel):
     archetype_match: ArchetypeMatch
     atlas_insight: AtlasInsight

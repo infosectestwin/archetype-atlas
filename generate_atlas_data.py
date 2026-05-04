@@ -2,8 +2,10 @@ import csv
 import random
 
 # Lead Architect Rowen's Archetype Blueprints
+# Updated with exact archetype IDs (slugs) as requested
 ARCHETYPES = {
-    "The Powerhouse": {
+    "powerhouse": {
+        "display_name": "The Powerhouse",
         "height": (180, 210),
         "weight": (100, 145),
         "wingspan": (185, 225),
@@ -12,7 +14,8 @@ ARCHETYPES = {
         "paralympic_sport": "Para Athletics - F57 Field",
         "classification": "F57"
     },
-    "The Aerobic Engine": {
+    "aerobic_engine": {
+        "display_name": "The Aerobic Engine",
         "height": (160, 185),
         "weight": (45, 65),
         "wingspan": (160, 190),
@@ -21,7 +24,8 @@ ARCHETYPES = {
         "paralympic_sport": "Para Athletics - T54 Racing",
         "classification": "T54"
     },
-    "The Kinetic Lever": {
+    "kinetic_lever": {
+        "display_name": "The Kinetic Lever",
         "height": (190, 220),
         "weight": (75, 100),
         "wingspan": (200, 240),
@@ -30,7 +34,8 @@ ARCHETYPES = {
         "paralympic_sport": "Sitting Volleyball",
         "classification": "VS1"
     },
-    "The Compact Dynamo": {
+    "compact_dynamo": {
+        "display_name": "The Compact Dynamo",
         "height": (145, 165),
         "weight": (40, 60),
         "wingspan": (140, 170),
@@ -39,7 +44,8 @@ ARCHETYPES = {
         "paralympic_sport": "Para Powerlifting",
         "classification": "PO"
     },
-    "The Aquatic Glider": {
+    "aquatic_glider": {
+        "display_name": "The Aquatic Glider",
         "height": (185, 205),
         "weight": (80, 105),
         "wingspan": (195, 220),
@@ -48,7 +54,8 @@ ARCHETYPES = {
         "paralympic_sport": "Para Swimming - S9",
         "classification": "S9"
     },
-    "The Agile Tactician": {
+    "agile_tactician": {
+        "display_name": "The Agile Tactician",
         "height": (170, 195),
         "weight": (65, 85),
         "wingspan": (175, 205),
@@ -71,8 +78,8 @@ def generate_data(num_records=5000):
     # Ensuring strict parity: 2500 Olympic, 2500 Paralympic
     for i in range(num_records):
         is_paralympic = i >= (num_records // 2)
-        archetype_name = random.choice(archetype_keys)
-        blueprint = ARCHETYPES[archetype_name]
+        archetype_slug = random.choice(archetype_keys)
+        blueprint = ARCHETYPES[archetype_slug]
         
         # Biometric generation based on blueprint
         height = round(random.uniform(*blueprint["height"]), 1)
@@ -92,7 +99,7 @@ def generate_data(num_records=5000):
             
         records.append([
             athlete_id, name, height, weight, wingspan, 
-            sport, year, is_paralympic, classification, archetype_name
+            sport, year, is_paralympic, classification, archetype_slug
         ])
         
     random.shuffle(records)
@@ -103,6 +110,6 @@ def generate_data(num_records=5000):
         writer.writerows(records)
 
 if __name__ == "__main__":
-    print("Rowen: 'Initializing data synthesis...'")
+    print("Rowen: 'Initializing data synthesis with exact archetype IDs...'")
     generate_data()
     print("Rowen: 'Synthesis complete. historical_athletes.csv generated.'")

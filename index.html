@@ -57,7 +57,49 @@
             border-color: #ffffff;
         }
         .toggle-checkbox:checked + .toggle-label {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(50, 255, 126, 0.2);
+            box-shadow: 0 0 15px rgba(50, 255, 126, 0.3);
+        }
+
+        /* Breathing Pulse for Toggle */
+        @keyframes breathing-lime {
+            0% { box-shadow: 0 0 5px rgba(50, 255, 126, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(50, 255, 126, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(50, 255, 126, 0.2); }
+        }
+        .toggle-label {
+            animation: breathing-lime 3s ease-in-out infinite;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 180px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 20;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -90px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
 
         /* Radar Chart styling */
@@ -116,6 +158,15 @@
             animation: bloom 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
         }
 
+        @keyframes pulse-lime {
+            0% { border-color: rgba(50, 255, 126, 0); }
+            50% { border-color: rgba(50, 255, 126, 0.8); box-shadow: 0 0 20px rgba(50, 255, 126, 0.2); }
+            100% { border-color: rgba(255, 255, 255, 0.1); }
+        }
+        .pulse-lime {
+            animation: pulse-lime 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .mono { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
@@ -172,13 +223,15 @@
                 <!-- Context Toggle -->
                 <div class="flex items-center justify-between border-t border-white/5 pt-6">
                     <span class="text-[10px] uppercase tracking-widest text-neutral-400">Context: Olympic // Paralympic</span>
-                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in tooltip">
                         <input type="checkbox" name="toggle" id="toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-neutral-800 border-4 border-transparent appearance-none cursor-pointer outline-none transition-all"/>
                         <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-white/10 cursor-pointer"></label>
+                        <span class="tooltiptext">Select Context for Parity Analysis</span>
                     </div>
                 </div>
 
                 <!-- Action -->
+                <div id="errorDisplay" class="hidden text-red-500 text-[10px] uppercase tracking-widest text-center animate-pulse mb-4"></div>
                 <button type="submit" id="submitBtn"
                     class="w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.3em] rounded-xl hover:bg-neutral-200 transition-all flex items-center justify-center gap-3">
                     <span id="btnText">Initiate Synthesis</span>
@@ -304,6 +357,64 @@
         const btnIcon = document.getElementById('btnIcon');
         const resultCard = document.getElementById('resultCard');
         const scanner = document.getElementById('scanner');
+        
+        const inputs = ['height', 'weight', 'wingspan'].map(id => document.getElementById(id));
+        let analysisPerformed = false;
+
+        // Validation: Disable button by default
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        function validateInputs() {
+            const allValid = inputs.every(input => {
+                const val = parseFloat(input.value);
+                return !isNaN(val) && val > 0;
+            });
+
+            if (allValid) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        const toggle = document.getElementById('toggle');
+        
+        // Reactive Persistence: Update matches and radar instantly on toggle
+        toggle.addEventListener('change', () => {
+            if (analysisPerformed && !resultCard.classList.contains('hidden')) {
+                // Clear and re-trigger pulse
+                resultCard.classList.remove('pulse-lime');
+                void resultCard.offsetWidth; // Trigger reflow
+                resultCard.classList.add('pulse-lime');
+
+                // Visual Feedback: Show prioritizing perspective
+                if (toggle.checked) {
+                    document.getElementById('paralympicMatch').classList.add('scale-110', 'transition-transform');
+                    setTimeout(() => document.getElementById('paralympicMatch').classList.remove('scale-110'), 300);
+                } else {
+                    document.getElementById('olympicMatch').classList.add('scale-110', 'transition-transform');
+                    setTimeout(() => document.getElementById('olympicMatch').classList.remove('scale-110'), 300);
+                }
+            }
+        });
+
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                validateInputs();
+                
+                // Visual Refresh: Clear results if new data is entered after an analysis
+                if (analysisPerformed && !resultCard.classList.contains('hidden')) {
+                    resultCard.classList.add('hidden');
+                    // Reset radar and matches for a clean slate
+                    document.getElementById('similarityScore').innerText = "0.0%";
+                    document.getElementById('olympicMatch').innerText = "Loading...";
+                    document.getElementById('paralympicMatch').innerText = "Loading...";
+                }
+            });
+        });
 
         function getPoint(zScore, angle) {
             const cx = 200, cy = 200;
@@ -342,6 +453,16 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // State Reset: Clear previous errors
+            const errorDisplay = document.getElementById('errorDisplay');
+            errorDisplay.innerText = "";
+            errorDisplay.classList.add('hidden');
+
+            // Input Clearing: Reset matches while searching with the official fallback
+            document.getElementById('olympicMatch').innerText = "Analyzing National Archives...";
+            document.getElementById('paralympicMatch').innerText = "Analyzing National Archives...";
+            resultCard.classList.remove('pulse-lime');
 
             submitBtn.disabled = true;
             btnText.innerText = "Analyzing...";
@@ -395,15 +516,27 @@
                 
                 // Finalize Animation
                 scanner.style.display = 'none';
+                analysisPerformed = true;
+
+                // Visual Feedback: Trigger pulse animation
+                resultCard.classList.add('pulse-lime');
                 
             } catch (err) {
-                alert(`Rowen: 'Synthesis failed.' ${err.message}`);
+                // State Reset: Display failure in the UI
+                const errorDisplay = document.getElementById('errorDisplay');
+                errorDisplay.innerText = `Rowen: 'Synthesis failed.' ${err.message}`;
+                errorDisplay.classList.remove('hidden');
+                
                 resultCard.classList.add('hidden');
             } finally {
+                // The State Reset: Execution in finally block
                 submitBtn.disabled = false;
-                btnText.innerText = "Initiate Synthesis";
-                btnIcon.setAttribute('data-lucide', 'cpu');
-                btnIcon.classList.remove('animate-spin');
+                btnText.innerText = analysisPerformed ? "Update Analysis" : "Initiate Synthesis";
+                
+                // Ensure spinner is removed and icon is reset
+                const currentIcon = document.getElementById('btnIcon');
+                currentIcon.setAttribute('data-lucide', 'cpu');
+                currentIcon.classList.remove('animate-spin');
                 lucide.createIcons();
             }
         });
