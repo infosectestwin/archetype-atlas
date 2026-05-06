@@ -435,11 +435,16 @@
 
             if (toggleDebounce) clearTimeout(toggleDebounce);
             
-            toggleDebounce = setTimeout(async () => {
+            toggle_debounce = setTimeout(async () => {
                 if (analysisPerformed && !resultCard.classList.contains('hidden')) {
                     console.log("Rowen: 'Context parity shifted. Re-synthesizing...'");
+
+                    // [VISUAL REFRESH] Clear current person to indicate loading
+                    document.getElementById('archetypeTitle').innerText = "Analyzing...";
+                    document.getElementById('archetypeImage').src = "";
+
                     await performAnalysis();
-                    
+
                     // Clear and re-trigger pulse
                     resultCard.classList.remove('pulse-lime');
                     void resultCard.offsetWidth; // Trigger reflow

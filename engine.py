@@ -320,17 +320,20 @@ class AtlasEngine:
         """
         Synthesizes an AtlasInsight using the biometric similarity context and The Onyx Hierarchy.
         """
-        # 1. Performance Cache Layer: Check for existing fully-resolved synthesis
-        cache_key = (
+        # 1. Performance Cache Layer: Mode-Specific Keyed Storage
+        mode_key = "paralympic" if user_biometrics.is_paralympic else "olympic"
+        biometric_key = (
             round(user_biometrics.height_cm, 1), 
             round(user_biometrics.weight_kg, 1), 
-            round(user_biometrics.wingspan_cm, 1),
-            user_biometrics.is_paralympic
+            round(user_biometrics.wingspan_cm, 1)
         )
         
-        if cache_key in self._synthesis_cache:
-            print(f"Rowen: 'High-fidelity synthesis retrieved from keyed cache: {cache_key}'")
-            return self._synthesis_cache[cache_key]
+        if mode_key not in self._synthesis_cache:
+            self._synthesis_cache[mode_key] = {}
+            
+        if biometric_key in self._synthesis_cache[mode_key]:
+            print(f"Rowen: 'High-fidelity [{mode_key}] synthesis retrieved from keyed cache: {biometric_key}'")
+            return self._synthesis_cache[mode_key][biometric_key]
 
         # 2. Biometric Grounding (Euclidean Distance)
         olympic_neighbors, paralympic_neighbors, min_dist = self._find_nearest_neighbors(user_biometrics)
@@ -365,28 +368,33 @@ class AtlasEngine:
             )
         context_str = "\n".join(context_lines)
 
+        # [PROMPT HARDENING] Explicitly forcing the AI to respect the toggle state.
+        target_mode = "PARALYMPIC" if user_biometrics.is_paralympic else "OLYMPIC"
         prompt = f"""
 SYSTEM: Act as the 'Archetype Atlas Matching Engine'. You are Rowen, the Lead Architect.
-TONE: Professional, analytical, and scouting-focused. Avoid definitive statements like 'You are'; use 'Your profile suggests you could be' or similar technical phrasing.
+TONE: Professional, analytical, and scouting-focused. 
 
-CORE DIRECTIVE: Identify the 'Archetype Blueprint' (e.g., 'Powerhouse', 'Agile Tactician') from the HISTORICAL CONTEXT. 
-MANDATORY: NEVER use an athlete's ID or Name (e.g., 'Athlete_123') as the 'archetype_name'. Use the archetype slug or descriptive label.
+CORE DIRECTIVE: You MUST focus your synthesis EXCLUSIVELY on the {target_mode} context. 
+The user has selected the {target_mode} filter. Your insight text and archetype selection MUST prioritize the structural nuances of {target_mode} competition.
 
-DATA CONTEXT: Analyze the user biometrics against the historical dataset below ({'Paralympic' if user_biometrics.is_paralympic else 'Olympic'} focus).
-HISTORICAL CONTEXT:
+MANDATORY: 
+- NEVER use an athlete's ID or Name as the 'archetype_name'. 
+- All insights MUST be speculative (use 'could', 'might', or 'potentially').
+- Focus on the {target_mode} data provided in the context below.
+
+DATA CONTEXT:
 {context_str}
 
 USER DATA:
 Height: {user_biometrics.height_cm}cm, Weight: {user_biometrics.weight_kg}kg, Wingspan: {user_biometrics.wingspan_cm}cm
 
 OUTPUT FORMAT (JSON ONLY):
-You MUST return an array of matches in 'potential_matches'. Do not limit the output to a single result.
 {{
   "archetype_name": "Primary Archetype Blueprint",
   "potential_matches": ["Secondary Match 1", "Secondary Match 2"],
   "confidence_score": 0.95,
   "shared_traits": ["trait 1", "trait 2"],
-  "insight_text": "Technical analysis. CRITICAL: Rowen requires all insights to be speculative. Every entry MUST include 'could', 'might', or 'potentially'."
+  "insight_text": "Technical analysis strictly focused on the {target_mode} alignment."
 }}
 """
         # 3. Execute Onyx Hierarchy with Fallback logic
@@ -423,7 +431,7 @@ You MUST return an array of matches in 'potential_matches'. Do not limit the out
                 potential_matches=all_potential_archetypes,
                 confidence_score=0.88, 
                 shared_traits=["Biometric Consistency", "National Archive Anchor", "Mechanical Parity"],
-                insight_text=recovery_blueprints.get(recovery_name, f"Your profile suggests you could be a match for the '{recovery_name}' blueprint, potentially indicating a shared performance lineage within our archives."),
+                insight_text=f"[{target_mode} FOCUS]: " + recovery_blueprints.get(recovery_name, f"Your profile suggests you could be a match for the '{recovery_name}' blueprint."),
                 system_node="Local Archive"
             )
 
@@ -474,8 +482,8 @@ You MUST return an array of matches in 'potential_matches'. Do not limit the out
             system_node=ai_data.system_node
         )
 
-        # Store fully resolved object in cache
-        self._synthesis_cache[cache_key] = final_output
+        # Store fully resolved object in cache (Keyed by bucket)
+        self._synthesis_cache[mode_key][biometric_key] = final_output
         return final_output
 
 if __name__ == "__main__":
