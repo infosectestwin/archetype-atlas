@@ -1,12 +1,30 @@
-from fastapi import FastAPI, HTTPException
+import os
+
+# [COLD START CALIBRATION] 
+# Explicitly purging API keys from the environment to force Vertex AI (Onyx Prime) authentication.
+os.environ.pop("GOOGLE_API_KEY", None)
+os.environ.pop("GEMINI_API_KEY", None)
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
-import os
+import time
 
 from models import AthleteBiometrics, EngineOutput
 from engine import AtlasEngine, InitializationError
 
 app = FastAPI(title="The Archetype Atlas API")
+
+# [DIAGNOSTIC MIDDLEWARE] 
+# Monitoring request lifecycle to prevent/diagnose 499 CANCELLED errors.
+@app.middleware("http")
+async def diagnostic_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    print(f"Rowen: 'Request processed in {process_time:.4f}s. Path: {request.url.path}'")
+    return response
 
 # Global engine instance
 try:

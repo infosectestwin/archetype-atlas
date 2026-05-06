@@ -158,6 +158,11 @@
             animation: bloom 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
         }
 
+        #archetypeTitle {
+            text-wrap: balance;
+            word-break: break-word;
+        }
+
         @keyframes pulse-lime {
             0% { border-color: rgba(50, 255, 126, 0); }
             50% { border-color: rgba(50, 255, 126, 0.8); box-shadow: 0 0 20px rgba(50, 255, 126, 0.2); }
@@ -244,13 +249,29 @@
         <div id="resultCard" class="hidden space-y-8">
             <div class="frosted-onyx rounded-3xl p-10 border-l-4 border-l-white/20 bloom">
                 <div class="flex items-start justify-between mb-10">
-                    <div>
-                        <h2 id="archetypeTitle" class="text-3xl font-bold text-white tracking-tight uppercase">THE POWERHOUSE</h2>
-                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">Matched Archetype // Confidence: <span id="confidence">98</span>%</p>
+                    <div class="flex gap-6">
+                        <!-- Archetype Image Wrapper -->
+                        <div class="relative w-24 h-24 rounded-2xl overflow-hidden border border-white/10 liquid-glass shrink-0">
+                            <img id="archetypeImage" src="" alt="Archetype Profile" class="w-full h-full object-cover opacity-80">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <!-- Verified Badge -->
+                            <div class="absolute bottom-1 right-1 bg-[#32ff7e] rounded-full p-1 shadow-lg">
+                                <i data-lucide="check-check" class="w-3 h-3 text-black"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 id="archetypeTitle" class="text-3xl font-bold text-white tracking-tight uppercase">THE POWERHOUSE</h2>
+                            <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">Matched Archetype // Confidence: <span id="confidence">98</span>%</p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                        <span class="text-[10px] uppercase tracking-tighter text-neutral-300">Rowen 🐾</span>
-                        <span class="text-[8px] text-neutral-600">Lead Architect</span>
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                            <span class="text-[10px] uppercase tracking-tighter text-neutral-300">Rowen 🐾</span>
+                            <span class="text-[8px] text-neutral-600">Lead Architect</span>
+                        </div>
+                        <div id="nodeTag" class="text-[7px] mono uppercase tracking-[0.2em] text-[#32ff7e] opacity-40 px-2 py-0.5 rounded-sm border border-[#32ff7e]/20 hidden">
+                            Node: <span id="nodeName">Unknown</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -260,15 +281,38 @@
                         Analysis pending synthesis subsystem execution...
                     </p>
 
-                    <!-- Matched Athletes -->
-                    <div class="grid grid-cols-2 gap-8 border-t border-b border-white/5 py-8">
-                        <div class="text-center space-y-2">
-                            <p class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Olympic Match</p>
-                            <p id="olympicMatch" class="text-sm font-bold cyber-lime-glow mono uppercase tracking-wider">Loading...</p>
+                    <!-- Matched Athletes: Dual State -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-b border-white/5 py-10">
+                        <!-- Olympic Match -->
+                        <div id="olympicCard" class="frosted-onyx rounded-2xl p-6 border border-white/5 space-y-4 transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Olympic Match</span>
+                                <div class="bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-500/30">
+                                    <span class="text-[7px] text-blue-400 uppercase font-bold tracking-tighter">Olympic</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                                    <img id="olympicImage" src="" alt="Olympic Athlete" class="w-full h-full object-cover opacity-70">
+                                </div>
+                                <p id="olympicMatch" class="text-xs font-bold text-white mono uppercase tracking-wider">Loading...</p>
+                            </div>
                         </div>
-                        <div class="text-center space-y-2 border-l border-white/5">
-                            <p class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Paralympic Match</p>
-                            <p id="paralympicMatch" class="text-sm font-bold cyber-lime-glow mono uppercase tracking-wider">Loading...</p>
+
+                        <!-- Paralympic Match -->
+                        <div id="paralympicCard" class="frosted-onyx rounded-2xl p-6 border border-white/5 space-y-4 transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[8px] uppercase tracking-[0.3em] text-neutral-500">Historical Paralympic Match</span>
+                                <div class="bg-lime-500/20 px-2 py-0.5 rounded-full border border-lime-500/30">
+                                    <span class="text-[7px] text-lime-400 uppercase font-bold tracking-tighter">Paralympic</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                                    <img id="paralympicImage" src="" alt="Paralympic Athlete" class="w-full h-full object-cover opacity-70">
+                                </div>
+                                <p id="paralympicMatch" class="text-xs font-bold text-white mono uppercase tracking-wider">Loading...</p>
+                            </div>
                         </div>
                     </div>
                     
@@ -382,23 +426,27 @@
 
         const toggle = document.getElementById('toggle');
         
+        let toggleDebounce = null;
         // Reactive Persistence: Update matches and radar instantly on toggle
-        toggle.addEventListener('change', () => {
-            if (analysisPerformed && !resultCard.classList.contains('hidden')) {
-                // Clear and re-trigger pulse
-                resultCard.classList.remove('pulse-lime');
-                void resultCard.offsetWidth; // Trigger reflow
-                resultCard.classList.add('pulse-lime');
+        toggle.addEventListener('change', async () => {
+            // [DEBOUNCE PROTECT] Disable toggle for 3s to prevent 499s and overlapping requests
+            toggle.disabled = true;
+            setTimeout(() => { toggle.disabled = false; }, 3000);
 
-                // Visual Feedback: Show prioritizing perspective
-                if (toggle.checked) {
-                    document.getElementById('paralympicMatch').classList.add('scale-110', 'transition-transform');
-                    setTimeout(() => document.getElementById('paralympicMatch').classList.remove('scale-110'), 300);
-                } else {
-                    document.getElementById('olympicMatch').classList.add('scale-110', 'transition-transform');
-                    setTimeout(() => document.getElementById('olympicMatch').classList.remove('scale-110'), 300);
+            if (toggleDebounce) clearTimeout(toggleDebounce);
+            
+            toggleDebounce = setTimeout(async () => {
+                if (analysisPerformed && !resultCard.classList.contains('hidden')) {
+                    console.log("Rowen: 'Context parity shifted. Re-synthesizing...'");
+                    await performAnalysis();
+                    
+                    // Clear and re-trigger pulse
+                    resultCard.classList.remove('pulse-lime');
+                    void resultCard.offsetWidth; // Trigger reflow
+                    resultCard.classList.add('pulse-lime');
                 }
-            }
+                console.log("Rowen: 'Context parity toggled. Debounce complete.'");
+            }, 250);
         });
 
         inputs.forEach(input => {
@@ -408,10 +456,9 @@
                 // Visual Refresh: Clear results if new data is entered after an analysis
                 if (analysisPerformed && !resultCard.classList.contains('hidden')) {
                     resultCard.classList.add('hidden');
-                    // Reset radar and matches for a clean slate
+                    // Reset state for a clean slate
                     document.getElementById('similarityScore').innerText = "0.0%";
-                    document.getElementById('olympicMatch').innerText = "Loading...";
-                    document.getElementById('paralympicMatch').innerText = "Loading...";
+                    document.getElementById('athleteMatch').innerText = "Loading...";
                 }
             });
         });
@@ -451,17 +498,27 @@
             document.getElementById('archetypePath').setAttribute('d', archPath);
         }
 
-        form.addEventListener('submit', async (e) => {
+        let submitDebounce = null;
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (submitDebounce) return; // Prevent double-clicks
+            
+            submitDebounce = setTimeout(async () => {
+                await performAnalysis();
+                submitDebounce = null;
+            }, 500);
+        });
 
+        async function performAnalysis() {
             // State Reset: Clear previous errors
             const errorDisplay = document.getElementById('errorDisplay');
             errorDisplay.innerText = "";
             errorDisplay.classList.add('hidden');
 
-            // Input Clearing: Reset matches while searching with the official fallback
-            document.getElementById('olympicMatch').innerText = "Analyzing National Archives...";
-            document.getElementById('paralympicMatch').innerText = "Analyzing National Archives...";
+            // Input Clearing: Reset match text for a clean slate
+            document.getElementById('olympicMatch').innerText = "Analyzing...";
+            document.getElementById('paralympicMatch').innerText = "Analyzing...";
             resultCard.classList.remove('pulse-lime');
 
             // The Trigger: Re-query icon and initiate spinner
@@ -477,6 +534,7 @@
             scanner.style.display = 'block';
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 
+            const isParalympic = document.getElementById('toggle').checked;
             const payload = {
                 athlete_id: 0,
                 name: "User",
@@ -486,7 +544,7 @@
                 classification_code: "",
                 sport: "User Input",
                 year: 2026,
-                is_paralympic: document.getElementById('toggle').checked
+                is_paralympic: isParalympic
             };
 
             try {
@@ -504,17 +562,66 @@
                 const result = await response.json();
 
                 // Populate Result Card
-                document.getElementById('archetypeTitle').innerText = result.archetype_match.archetype_name;
+                const archTitle = document.getElementById('archetypeTitle');
+                let archName = result.archetype_match.archetype_name;
+                archTitle.innerText = archName;
+
+                // Dynamic Layout Polish
+                if (archName.length > 30) {
+                    archTitle.style.fontSize = '1.25rem'; 
+                    archTitle.style.lineHeight = '1.2';
+                } else {
+                    archTitle.style.fontSize = '';
+                    archTitle.style.lineHeight = '';
+                }
+
                 document.getElementById('confidence').innerText = (result.archetype_match.confidence_score * 100).toFixed(0);
                 document.getElementById('insightText').innerText = result.atlas_insight.insight_text;
                 document.getElementById('similarityScore').innerText = result.similarity_score + "%";
                 
-                // Populate Matches & Notes
-                document.getElementById('olympicMatch').innerText = result.olympic_match;
-                document.getElementById('paralympicMatch').innerText = result.paralympic_match;
+                // Populate Matches: Dual State
+                const olympicMatchEl = document.getElementById('olympicMatch');
+                const paralympicMatchEl = document.getElementById('paralympicMatch');
+                const olympicImageEl = document.getElementById('olympicImage');
+                const paralympicImageEl = document.getElementById('paralympicImage');
+
+                olympicMatchEl.innerText = result.olympic_match;
+                paralympicMatchEl.innerText = result.paralympic_match;
+                olympicImageEl.src = result.olympic_image_url;
+                paralympicImageEl.src = result.paralympic_image_url;
+
+                // 172cm Edge Case Verification: Handle long names in dual cards
+                [olympicMatchEl, paralympicMatchEl].forEach(el => {
+                    if (el.innerText.length > 20) {
+                        el.style.fontSize = '0.65rem';
+                    } else {
+                        el.style.fontSize = '';
+                    }
+                });
+
+                // Set primary archetype image based on current toggle (Onyx Logic)
+                const currentIsParalympic = document.getElementById('toggle').checked;
+                document.getElementById('archetypeImage').src = currentIsParalympic ? result.paralympic_image_url : result.olympic_image_url;
+
+                // Log all matches for technical review (Multi-match array structure)
+                if (result.matches && result.matches.length > 0) {
+                    console.log("Rowen: 'Multi-match array structure verified:'", result.matches);
+                }
+
                 document.getElementById('architectNote').innerText = `[Architect's Note]: ${result.architect_note}`;
 
+                // Observability: System Node
+                const nodeTag = document.getElementById('nodeTag');
+                const nodeName = document.getElementById('nodeName');
+                if (result.system_node) {
+                    nodeName.innerText = result.system_node;
+                    nodeTag.classList.remove('hidden');
+                } else {
+                    nodeTag.classList.add('hidden');
+                }
+
                 updateRadar(result.user_z_scores, result.archetype_z_scores);
+
                 
                 // Finalize Animation
                 scanner.style.display = 'none';
@@ -540,7 +647,7 @@
                 finalIcon.classList.remove('animate-spin');
                 lucide.createIcons();
             }
-        });
+        }
     </script>
 </body>
 </html>

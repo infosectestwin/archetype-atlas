@@ -2,7 +2,7 @@ from engine import AtlasEngine
 from models import AthleteBiometrics
 import os
 
-def run_atlas_test():
+def test_run_atlas_test():
     print("Rowen: 'Commencing high-fidelity biometric validation...'")
     
     try:
@@ -56,4 +56,4 @@ def run_atlas_test():
         print(f"Rowen: 'System alert - Analysis interrupted.' Error: {e}")
 
 if __name__ == "__main__":
-    run_atlas_test()
+    test_run_atlas_test()

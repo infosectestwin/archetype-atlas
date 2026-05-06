@@ -17,14 +17,14 @@ The engine does not rely on simple comparisons. It utilizes **Onyx Protocol Z-Sc
 - **Weighted Specificity:** For athletes above 185cm, the engine applies a 1.5x multiplier to the Weight parameter to distinguish between the lean profiles of Track & Field and the mass-heavy profiles of Swimming.
 - **Wingspan Ratio:** A primary feature used to identify "Kinetic Levers"—athletes whose structural reach exceeds their stature by a significant margin.
 
-## Validation Matrix (Calibration Results)
+## Validation Matrix (Calibration Results v1.0.5)
 The Atlas has been surgically calibrated against known elite parities:
 
 | Profile Input | Height | Weight | Wingspan | Matched Archetype | Historical Parity Counterparts |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Case 1 (Track)** | 188cm | 75kg | 198cm | **The Kinetic Lever** | Tara Davis-Woodhall // Hunter Woodhall |
+| **Case 1 (Track)** | 198cm | 85kg | 235cm | **The Kinetic Lever** | Tara Davis-Woodhall // Hunter Woodhall |
 | **Case 2 (Fencing)** | 183cm | 73kg | 193cm | **The Agile Tactician** | Lee Kiefer // Bebe Vio |
-| **Case 3 (Swim)** | 172cm | 58kg | 174cm | **The Aerobic Engine** | Katie Ledecky // Jessica Long |
+| **Case 3 (Swim)** | 168cm | 55kg | 170cm | **The Aerobic Engine** | Katie Ledecky // Jessica Long |
 | **Case 4 (Force)** | 200cm | 130kg | 210cm | **The Powerhouse** | Ryan Crouser // Jeremy Campbell |
 | **Case 5 (Torque)** | 142cm | 47kg | 142cm | **The Compact Dynamo** | Simone Biles // Bobby Body [Focus: Rotational Torque & CoM] |
 
@@ -71,4 +71,4 @@ Ensure you have Python 3.11+ installed.
    ```
 
 ---
-*Statistical Parity Protocol v1.0.4 // Onyx Protocol Active*
+*Statistical Parity Protocol v1.0.5 // Onyx Protocol Active*
