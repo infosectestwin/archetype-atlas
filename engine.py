@@ -544,8 +544,10 @@ OUTPUT SCHEMA:
             m for m in (ai_data.potential_matches or []) if 'Athlete_' not in m
         ))
 
-        congruence_note = f" Matches the 1:{user_ratio:.2f} lever ratio of {resolved_name}, though your {user_biometrics.height_cm:.0f}cm stature adds a unique Tier-1 power advantage."
-        architect_note = resolved_identity["note"] + congruence_note if not congruence_applied else f"Identified 'Structural Congruence' at {ratio_delta:.3f} delta. " + resolved_identity["note"] + congruence_note
+        parity_note = f" Structural parity confirmed with {resolved_name}."
+        architect_note = resolved_identity["note"] + parity_note
+        if congruence_applied:
+            architect_note = "Structural Congruence detected. " + architect_note
 
         # 5. Z-Score Visualization Mapping
         def sanitize(text: str) -> str:

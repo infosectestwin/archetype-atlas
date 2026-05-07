@@ -318,7 +318,7 @@
                             </div>
                             <div class="flex gap-4 items-center">
                                 <div class="blueprint-box w-12 h-12 rounded-xl shrink-0 flex items-center justify-center">
-                                    <span id="olympicInitials" class="text-[11px] font-bold mono text-[#32ff7e] tracking-wider">—</span>
+                                    <span id="olympicInitials" class="text-sm font-bold mono text-[#32ff7e] tracking-widest text-center">—</span>
                                 </div>
                                 <p id="olympicMatch" class="text-xs font-bold text-white mono uppercase tracking-wider">Loading...</p>
                             </div>
@@ -334,7 +334,7 @@
                             </div>
                             <div class="flex gap-4 items-center">
                                 <div class="blueprint-box w-12 h-12 rounded-xl shrink-0 flex items-center justify-center">
-                                    <span id="paralympicInitials" class="text-[11px] font-bold mono text-[#32ff7e] tracking-wider">—</span>
+                                    <span id="paralympicInitials" class="text-sm font-bold mono text-[#32ff7e] tracking-widest text-center">—</span>
                                 </div>
                                 <p id="paralympicMatch" class="text-xs font-bold text-white mono uppercase tracking-wider">Loading...</p>
                             </div>
@@ -610,10 +610,8 @@
                 console.log('Backend Data Received:', result);
 
                 try {
-                    // Archetype title + blueprint boxes (single archName declaration)
+                    // Archetype title
                     const archName = (result.archetype_match?.archetype_name || "").toUpperCase();
-                    const archWords = archName.split(/\s+/).filter(w => w && w !== 'THE');
-                    const archShort = archWords[0] || "—";
 
                     const archTitle = document.getElementById('archetypeTitle');
                     if (archTitle) {
@@ -622,14 +620,20 @@
                         archTitle.style.lineHeight = archName.length > 30 ? '1.2' : '';
                     }
 
+                    // Archetype header blueprint box: full archetype name
                     const bpEl = document.getElementById('archetypeBlueprintName');
                     if (bpEl) bpEl.innerText = archName || "—";
 
+                    // Athlete card blueprint boxes: initials from the actual athlete names
+                    const initials = name => (name || "")
+                        .split(/\s+/).filter(Boolean)
+                        .map(w => w[0]).join('').toUpperCase().slice(0, 3) || "—";
+
                     const olEl = document.getElementById('olympicInitials');
-                    if (olEl) olEl.innerText = archShort;
+                    if (olEl) olEl.innerText = initials(result.olympic_match);
 
                     const paEl = document.getElementById('paralympicInitials');
-                    if (paEl) paEl.innerText = archShort;
+                    if (paEl) paEl.innerText = initials(result.paralympic_match);
 
                     // Confidence + insight
                     const confEl = document.getElementById('confidence');
