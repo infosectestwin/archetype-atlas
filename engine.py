@@ -200,39 +200,63 @@ class AtlasEngine:
 
     def _resolve_identity(self, archetype_name: str, olympic_neighbors: pd.DataFrame, paralympic_neighbors: pd.DataFrame) -> dict:
         """
-        Hardened identity resolution. Resolves any archetype name or neighbor set into a 
+        Hardened identity resolution. Resolves any archetype name or neighbor set into a
         full Hall of Fame profile or best-available historical anchor.
+
+        Resolution tiers (first match wins):
+          1. Explicit normalization: lower/strip/spaces-to-underscores → direct HOF key lookup
+          2. Sanitize strict: strip ALL delimiters → exact key match
+          3. Fuzzy containment: sanitized key contained in (or contains) sanitized query
+          4. Semantic keyword map: domain words → HOF key
+          5. Safety net: Euclidean neighbour anchors + General Athlete Unsplash images
         """
+        _GENERAL_ATHLETE_OLYMPIC  = "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2069&auto=format&fit=crop"
+        _GENERAL_ATHLETE_PARALYMPIC = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"
+
         def sanitize(text: str) -> str:
             if not text: return ""
             return str(text).lower().replace("_", "").replace("-", "").replace(" ", "").strip()
 
-        sanitized_query = sanitize(archetype_name)
-        normalized_hof = {sanitize(k): v for k, v in HALL_OF_FAME.items()}
-        
-        # 1. Attempt Hall of Fame Match (Strict -> Fuzzy -> Semantic)
-        hof_entry = normalized_hof.get(sanitized_query)
+        hof_entry = None
+        matched_key = None
+
+        # Tier 1: Explicit normalization — "Aerobic Engine" → "aerobic_engine"
+        normalized_key = archetype_name.lower().strip().replace(" ", "_")
+        if HALL_OF_FAME.get(normalized_key):
+            hof_entry = HALL_OF_FAME[normalized_key]
+            matched_key = normalized_key
+
+        # Tier 2: Sanitize-based strict lookup (strips all delimiters)
         if not hof_entry:
-            # Fuzzy: Check if any HOF key is contained in the query or vice versa
-            for key, entry in normalized_hof.items():
-                if key in sanitized_query or sanitized_query in key:
+            sanitized_query = sanitize(archetype_name)
+            sanitized_hof = {sanitize(k): (k, v) for k, v in HALL_OF_FAME.items()}
+            if sanitized_query in sanitized_hof:
+                matched_key, hof_entry = sanitized_hof[sanitized_query]
+
+        # Tier 3: Fuzzy containment
+        if not hof_entry:
+            for s_key, (orig_key, entry) in sanitized_hof.items():
+                if s_key in sanitized_query or sanitized_query in s_key:
                     hof_entry = entry
+                    matched_key = orig_key
                     break
-            
-            # Semantic: Map common terms back to their blueprint keys
-            if not hof_entry:
-                semantic_map = {
-                    "tactician": "agile_tactician", "fencer": "agile_tactician",
-                    "runner": "aerobic_engine", "endurance": "aerobic_engine", "swim": "aerobic_engine",
-                    "powerhouse": "powerhouse", "thrower": "powerhouse", "force": "powerhouse",
-                    "lever": "kinetic_lever", "propulsion": "kinetic_lever",
-                    "dynamo": "compact_dynamo", "torque": "compact_dynamo",
-                    "glider": "aquatic_glider", "fluid": "aquatic_glider"
-                }
-                for word, target_key in semantic_map.items():
-                    if word in sanitized_query:
-                        hof_entry = HALL_OF_FAME.get(target_key)
-                        break
+
+        # Tier 4: Semantic keyword map
+        if not hof_entry:
+            semantic_map = {
+                "tactician": "agile_tactician", "fencer": "agile_tactician", "fencing": "agile_tactician",
+                "aerobic": "aerobic_engine", "runner": "aerobic_engine",
+                "endurance": "aerobic_engine", "swim": "aerobic_engine",
+                "powerhouse": "powerhouse", "thrower": "powerhouse", "force": "powerhouse",
+                "lever": "kinetic_lever", "propulsion": "kinetic_lever", "kinetic": "kinetic_lever",
+                "dynamo": "compact_dynamo", "torque": "compact_dynamo", "compact": "compact_dynamo",
+                "glider": "aquatic_glider", "fluid": "aquatic_glider", "aquatic": "aquatic_glider",
+            }
+            for word, target_key in semantic_map.items():
+                if word in sanitized_query:
+                    hof_entry = HALL_OF_FAME.get(target_key)
+                    matched_key = target_key
+                    break
 
         # 2. Extract Data from Neighbors
         olympic_anchor = olympic_neighbors.iloc[0] if not olympic_neighbors.empty else None
@@ -240,6 +264,7 @@ class AtlasEngine:
 
         # 3. Final Integration
         if hof_entry:
+            print(f"Rowen: '[Identity] \"{archetype_name}\" → key [{matched_key}] | olympic: ...{hof_entry['olympic_image'][-40:]} | paralympic: ...{hof_entry['paralympic_image'][-40:]}'")
             return {
                 "olympic_match": hof_entry["olympic"],
                 "paralympic_match": hof_entry["paralympic"],
@@ -248,15 +273,15 @@ class AtlasEngine:
                 "note": hof_entry["note"]
             }
         else:
-            # Last Resort: Euclidean Anchors
+            # Safety Net: Euclidean Anchors + General Athlete images
             o_name = olympic_anchor['name'] if olympic_anchor is not None else "Historical Profile Verified"
             p_name = paralympic_anchor['name'] if paralympic_anchor is not None else "Historical Profile Verified"
-            
+            print(f"Rowen: '[Identity] WARNING — no HOF match for \"{archetype_name}\" (normalized: \"{normalized_key}\"). Using General Athlete fallback.'")
             return {
                 "olympic_match": o_name if "Athlete_" not in o_name else "Elite Olympic Anchor",
                 "paralympic_match": p_name if "Athlete_" not in p_name else "Elite Paralympic Anchor",
-                "olympic_image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
-                "paralympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
+                "olympic_image": _GENERAL_ATHLETE_OLYMPIC,
+                "paralympic_image": _GENERAL_ATHLETE_PARALYMPIC,
                 "note": "Shared biomechanical lineage confirmed via Euclidean proximity."
             }
 
