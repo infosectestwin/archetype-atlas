@@ -5,6 +5,8 @@ import json
 from dotenv import load_dotenv
 from google import genai
 from google.auth.exceptions import DefaultCredentialsError
+import vertexai
+from vertexai.generative_models import GenerativeModel, GenerationConfig
 from models import AthleteBiometrics, ArchetypeMatch, AtlasInsight, EngineOutput, BiometricZScores, AISynthesis
 
 # Load environment variables from .env file
@@ -57,6 +59,13 @@ HALL_OF_FAME = {
         "olympic_image": "https://images.unsplash.com/photo-1517438476312-10d79c07750d?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1461896756985-215053158f33?q=80&w=2070&auto=format&fit=crop",
         "note": "Balanced biometrics and superior reaction mechanics suggest a unified tactical profile."
+    },
+    "fencing_legend": {
+        "olympic": "Lee Kiefer",
+        "paralympic": "Piers Gilliver",
+        "olympic_image": "https://images.unsplash.com/photo-1517438476312-10d79c07750d?q=80&w=2070&auto=format&fit=crop",
+        "paralympic_image": "https://images.unsplash.com/photo-1461896756985-215053158f33?q=80&w=2070&auto=format&fit=crop",
+        "note": "Elite lever-based reaction mechanics define this fencing blueprint."
     }
 }
 
@@ -110,21 +119,20 @@ class AtlasEngine:
             self.df['sanitized_archetype'] = self.df['archetype'].apply(sanitize)
 
         # Initialize Failover Clients
-        self.vertex_client = None
+        self.vertex_model = None
         self.gemini_client = None
         self.backup_client = None
         
         # [Tier 1] Attempt Vertex AI Initialization (Node: Onyx Prime)
-        # Switching to 'global' location as requested to bypass regional 429 errors.
+        # Using gemini-2.5-flash in us-central1 as the stable advanced model.
         try:
-            # We explicitly exclude api_key here to ensure Vertex AI auth is used
-            self.vertex_client = genai.Client(vertexai=True, project=self.project_id, location="global")
-            print(f"Rowen: 'Node: Onyx Prime (Vertex AI) initialized in [global] for project: {self.project_id}.'")
-        except (DefaultCredentialsError, Exception) as e:
+            vertexai.init(project=self.project_id, location="us-central1")
+            self.vertex_model = GenerativeModel("gemini-2.5-flash")
+            print(f"Rowen: 'Node: Onyx Prime (Vertex AI) initialized in [us-central1] for project: {self.project_id}. Model: gemini-2.5-flash.'")
+        except Exception as e:
             print(f"Rowen: 'Onyx Prime initialization bypassed. Error: {e}'")
 
         # [Tier 2 & 3] Configure Gemini API Fallback (Relay & Core Protocols)
-        # These are now secondary and will only be hit if Vertex AI is unreachable.
         self.gemini_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         self.backup_api_key = os.environ.get("BACKUP_API_KEY") or self.gemini_api_key
         
@@ -137,14 +145,13 @@ class AtlasEngine:
         else:
             self.backup_client = self.gemini_client
         
-        if not self.vertex_client and not self.gemini_client:
+        if not self.vertex_model and not self.gemini_client:
             raise InitializationError(
                 "No AI Synthesis Subsystem available. "
                 "Verify GCP Project ID or GEMINI_API_KEY."
             )
         
         # 4. Performance Optimization: Synthesis Cache
-        # Global purge to force fresh analysis for the demo.
         self._synthesis_cache = {}
         print("Rowen: 'Onyx Cache Layer: PURGED. Ready for fresh synthesis.'")
 
@@ -188,7 +195,7 @@ class AtlasEngine:
         """
         def sanitize(text: str) -> str:
             if not text: return ""
-            return str(text).lower().replace("_", "").replace("-", "").strip()
+            return str(text).lower().replace("_", "").replace("-", "").replace(" ", "").strip()
 
         sanitized_query = sanitize(archetype_name)
         normalized_hof = {sanitize(k): v for k, v in HALL_OF_FAME.items()}
@@ -196,13 +203,13 @@ class AtlasEngine:
         # 1. Attempt Hall of Fame Match (Strict -> Fuzzy -> Semantic)
         hof_entry = normalized_hof.get(sanitized_query)
         if not hof_entry:
-            # Fuzzy: Check for key containment
+            # Fuzzy: Check if any HOF key is contained in the query or vice versa
             for key, entry in normalized_hof.items():
                 if key in sanitized_query or sanitized_query in key:
                     hof_entry = entry
                     break
             
-            # Semantic: Map variants back to blueprints
+            # Semantic: Map common terms back to their blueprint keys
             if not hof_entry:
                 semantic_map = {
                     "tactician": "agile_tactician", "fencer": "agile_tactician",
@@ -232,15 +239,18 @@ class AtlasEngine:
             }
         else:
             # Last Resort: Euclidean Anchors
+            o_name = olympic_anchor['name'] if olympic_anchor is not None else "Historical Profile Verified"
+            p_name = paralympic_anchor['name'] if paralympic_anchor is not None else "Historical Profile Verified"
+            
             return {
-                "olympic_match": olympic_anchor['name'] if olympic_anchor is not None else "Historical Profile Verified",
-                "paralympic_match": paralympic_anchor['name'] if paralympic_anchor is not None else "Historical Profile Verified",
+                "olympic_match": o_name if "Athlete_" not in o_name else "Elite Olympic Anchor",
+                "paralympic_match": p_name if "Athlete_" not in p_name else "Elite Paralympic Anchor",
                 "olympic_image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
                 "paralympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
                 "note": "Shared biomechanical lineage confirmed via Euclidean proximity."
             }
 
-    def generate_architect_note(self, prompt: str) -> AISynthesis:
+    def generate_architect_note(self, prompt: str, system_instruction: str = None) -> AISynthesis:
         """
         [THE ONYX HIERARCHY]
         Hardened 3-Tier Failover Engine with strict 3s timeout for Onyx Prime.
@@ -250,18 +260,26 @@ class AtlasEngine:
         error_log = []
 
         # Tier 1 (Node: Onyx Prime)
-        if self.vertex_client:
+        if self.vertex_model:
             try:
-                response = self.vertex_client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt,
-                    config={
-                        "response_mime_type": "application/json",
-                        "response_schema": AISynthesis,
-                        "http_options": {"timeout": 120000} 
-                    }
+                # Legacy SDK: System instruction is often better prepended
+                combined_prompt = f"SYSTEM: {system_instruction}\n\nUSER PROMPT: {prompt}" if system_instruction else prompt
+                
+                response = self.vertex_model.generate_content(
+                    combined_prompt,
+                    generation_config=GenerationConfig(
+                        response_mime_type="application/json",
+                        response_schema=AISynthesis.model_json_schema(),
+                    )
                 )
-                parsed_response = response.parsed
+                
+                raw_json = response.text.strip()
+                if raw_json.startswith("```json"):
+                    raw_json = raw_json[7:-3].strip()
+                
+                parsed_data = json.loads(raw_json)
+                parsed_response = AISynthesis(**parsed_data)
+                
                 system_node = "Onyx Prime"
                 print("Rowen: 'Synthesis secured via [Node: Onyx Prime] (Parsed).'")
             except Exception as e:
@@ -272,9 +290,10 @@ class AtlasEngine:
         if parsed_response is None and self.gemini_client:
             try:
                 response = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-1.5-flash-001",
                     contents=prompt,
                     config={
+                        "system_instruction": system_instruction,
                         "response_mime_type": "application/json",
                         "response_schema": AISynthesis,
                         "http_options": {"timeout": 120000}
@@ -291,9 +310,10 @@ class AtlasEngine:
         if parsed_response is None and self.backup_client:
             try:
                 response = self.backup_client.models.generate_content(
-                    model="gemini-2.5-flash-lite",
+                    model="gemini-1.5-flash",
                     contents=prompt,
                     config={
+                        "system_instruction": system_instruction,
                         "response_mime_type": "application/json",
                         "response_schema": AISynthesis,
                         "http_options": {"timeout": 120000}
@@ -319,6 +339,7 @@ class AtlasEngine:
     def generate_insight(self, user_biometrics: AthleteBiometrics) -> EngineOutput:
         """
         Synthesizes an AtlasInsight using the biometric similarity context and The Onyx Hierarchy.
+        Includes refined 'Onyx Prime' scoring logic and strict system instructions.
         """
         # 1. Performance Cache Layer: Mode-Specific Keyed Storage
         mode_key = "paralympic" if user_biometrics.is_paralympic else "olympic"
@@ -340,7 +361,8 @@ class AtlasEngine:
         
         # [Stat Parity] Guarantee global neighbors for AI context
         neighbors = pd.concat([olympic_neighbors, paralympic_neighbors]).sort_index()
-        top_match_id = str(neighbors.iloc[0]['archetype'])
+        top_match = neighbors.iloc[0]
+        top_match_id = str(top_match['archetype'])
         
         # [State Mapping] Pre-populate the Matches array from Euclidean neighbors
         all_potential_archetypes = [str(a).replace("_", " ") for a in neighbors['archetype'].unique()]
@@ -355,7 +377,28 @@ class AtlasEngine:
         user_z = (user_vec - disp_means) / disp_stds
         user_z_obj = BiometricZScores(height=float(user_z[0]), weight=float(user_z[1]), wingspan=float(user_z[2]))
 
-        similarity_score = round(100 * np.exp(-0.4 * min_dist), 1)
+        # --- RATIO-BASED SCORING LOGIC (ONYX PRIME) ---
+        user_ratio = user_biometrics.wingspan_cm / user_biometrics.height_cm
+        athlete_ratio = top_match['wingspan_cm'] / top_match['height_cm']
+        ratio_delta_pct = abs(user_ratio - athlete_ratio) / athlete_ratio
+        
+        # Base score from Euclidean distance
+        base_score = 100 * np.exp(-0.4 * min_dist)
+        
+        # Boost logic: If ratios match within 5%, ensure score is at least 80%
+        if ratio_delta_pct <= 0.05:
+            similarity_score = max(80.0, base_score)
+            # Add a secondary climb based on how close the ratio is
+            ratio_bonus = (0.05 - ratio_delta_pct) * 400 # Max +20% if delta is 0
+            similarity_score = min(99.9, similarity_score + ratio_bonus)
+            congruence_applied = True
+            ratio_delta = abs(user_ratio - athlete_ratio) # for the note
+        else:
+            similarity_score = base_score
+            congruence_applied = False
+            ratio_delta = abs(user_ratio - athlete_ratio)
+
+        similarity_score = round(similarity_score, 1)
 
         context_lines = []
         for _, row in neighbors.iterrows():
@@ -368,76 +411,94 @@ class AtlasEngine:
             )
         context_str = "\n".join(context_lines)
 
-        # [PROMPT HARDENING] Explicitly forcing the AI to respect the toggle state.
+        # [CLEAN STATE PROMPT]
         target_mode = "PARALYMPIC" if user_biometrics.is_paralympic else "OLYMPIC"
+        
+        system_instruction = f"""
+Act as 'Rowen', Lead Architect of The Archetype Atlas. 
+Your tone is clean, rational, and technical.
+
+CORE DIRECTIVE:
+Identify which 'Archetype Blueprint' the user fits into based on their biometrics and the historical context provided.
+You MUST prioritize the archetype explicitly mentioned in the HISTORICAL CONTEXT.
+
+MANDATORY RULES:
+1. Speak as Rowen (Lead Architect).
+2. Use conditional phrasing ('could', 'might', 'potentially', 'suggests').
+3. Focus synthesis EXCLUSIVELY on the {target_mode} filter.
+4. JSON ONLY: Return a valid JSON object matching the AISynthesis schema.
+"""
+
         prompt = f"""
-SYSTEM: Act as the 'Archetype Atlas Matching Engine'. You are Rowen, the Lead Architect.
-TONE: Professional, analytical, and scouting-focused. 
-
-CORE DIRECTIVE: You MUST focus your synthesis EXCLUSIVELY on the {target_mode} context. 
-The user has selected the {target_mode} filter. Your insight text and archetype selection MUST prioritize the structural nuances of {target_mode} competition.
-
-MANDATORY: 
-- NEVER use an athlete's ID or Name as the 'archetype_name'. 
-- All insights MUST be speculative (use 'could', 'might', or 'potentially').
-- Focus on the {target_mode} data provided in the context below.
-
-DATA CONTEXT:
+HISTORICAL CONTEXT (Top 5 Closest Biometric Matches):
 {context_str}
 
 USER DATA:
 Height: {user_biometrics.height_cm}cm, Weight: {user_biometrics.weight_kg}kg, Wingspan: {user_biometrics.wingspan_cm}cm
 
-OUTPUT FORMAT (JSON ONLY):
+HALL OF FAME MAPPINGS:
+- The Agile Tactician: Lee Kiefer (Fencing) / Bebe Vio (Wheelchair Fencing).
+- The Kinetic Lever: Tara Davis-Woodhall (Long Jump) / Hunter Woodhall (Para-Athletics).
+- The Aerobic Engine: Katie Ledecky (Swimming) / Jessica Long (Para-Swimming).
+- The Powerhouse: Ryan Crouser (Shot Put) / Jeremy Campbell (Para-Discus).
+- The Compact Dynamo: Simone Biles (Gymnastics) / Bobby Body (Para-Powerlifting).
+- The Aquatic Glider: Michael Phelps (Swimming) / Mallory Weggemann (Para-Swimming).
+
+OUTPUT SCHEMA:
 {{
   "archetype_name": "Primary Archetype Blueprint",
-  "potential_matches": ["Secondary Match 1", "Secondary Match 2"],
+  "potential_matches": ["Athlete Name 1", "Athlete Name 2"],
   "confidence_score": 0.95,
   "shared_traits": ["trait 1", "trait 2"],
-  "insight_text": "Technical analysis strictly focused on the {target_mode} alignment."
+  "insight_text": "Technical analysis focused on the {target_mode} alignment.",
+  "image_url": "Direct Wikimedia Link (if applicable)",
+  "system_node": "Onyx Prime"
 }}
 """
         # 3. Execute Onyx Hierarchy with Fallback logic
         try:
-            ai_data = self.generate_architect_note(prompt)
+            ai_data = self.generate_architect_note(prompt, system_instruction=system_instruction)
         except Exception as e:
-            error_msg = str(e)
-            print(f"Rowen: 'Synthesis failure. Engaging Hardened Local Synthesis. Error: {error_msg}'")
-
-            # Mapping IDs to blueprints to ensure the 'Verified' name appears
+            print(f"Rowen: 'Synthesis failure. Engaging Hardened Local Synthesis. Error: {e}'")
             name_map = {
-                "powerhouse": "Powerhouse",
-                "aerobic_engine": "Aerobic Engine",
-                "kinetic_lever": "Kinetic Lever",
-                "compact_dynamo": "Compact Dynamo",
-                "aquatic_glider": "Aquatic Glider",
-                "agile_tactician": "Agile Tactician"
+                "powerhouse": "Powerhouse", "aerobic_engine": "Aerobic Engine",
+                "kinetic_lever": "Kinetic Lever", "compact_dynamo": "Compact Dynamo",
+                "aquatic_glider": "Aquatic Glider", "agile_tactician": "Agile Tactician"
             }
             recovery_name = name_map.get(top_match_id, top_match_id.replace("_", " ").title())
-            
-            # Persona-aligned recovery insights (Hardcoded for demo parity)
-            recovery_blueprints = {
-                "Aerobic Engine": "Your biometric efficiency suggests you could be a structural match for our elite endurance collective. This profile might indicate high-capacity hydro-efficiency.",
-                "Powerhouse": "Mechanical mass distribution suggests you could potentially generate extreme explosive torque. This profile might align with our high-mass stability blueprints.",
-                "Kinetic Lever": "Structural reach-to-height ratio suggests you could be a Kinetic Lever. This mechanical advantage might indicate a unified blueprint for horizontal propulsion.",
-                "Compact Dynamo": "Low center of gravity and power-to-weight ratio suggest you could potentially excel in high-velocity rotational disciplines. You might share a blueprint with our most agile anchors.",
-                "Agile Tactician": "Balanced physical dimensions and superior reaction mechanics suggest you might be a structural match for our tactical precision collective. This profile could indicate superior biomechanical reaction.",
-                "Aquatic Glider": "High wingspan ratio suggests you could potentially indicate a shared mastery of fluid dynamics and hydro-efficiency. Your profile might indicate superior aquatic propulsion."
-            }
-            
-            # Create a hardened local recovery object (Ensures Persona & UI Parity)
             ai_data = AISynthesis(
                 archetype_name=recovery_name,
                 potential_matches=all_potential_archetypes,
                 confidence_score=0.88, 
-                shared_traits=["Biometric Consistency", "National Archive Anchor", "Mechanical Parity"],
-                insight_text=f"[{target_mode} FOCUS]: " + recovery_blueprints.get(recovery_name, f"Your profile suggests you could be a match for the '{recovery_name}' blueprint."),
+                shared_traits=["Biometric Consistency", "Mechanical Parity"],
+                insight_text=f"Your profile suggests you could be a match for the '{recovery_name}' blueprint.",
+                image_url="",
                 system_node="Local Archive"
             )
 
         # 4. Identity Mapping: Resolve Hall of Fame Parity
-        resolved_identity = self._resolve_identity(ai_data.archetype_name, olympic_neighbors, paralympic_neighbors)
+        # Check if AI triggered the 'No direct celebrity match' fallback
+        if "no direct celebrity match" in ai_data.archetype_name.lower() or (ai_data.potential_matches and "no direct celebrity match" in ai_data.potential_matches[0].lower()):
+            resolved_identity = {
+                "olympic_match": "N/A",
+                "paralympic_match": "N/A",
+                "olympic_image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
+                "paralympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
+                "note": "Biometric profile represents a unique athletic blueprint with no direct high-profile match."
+            }
+            if "archetype:" in ai_data.archetype_name.lower():
+                resolved_identity["note"] = f"Archetype: {ai_data.archetype_name.split('Archetype:')[-1].strip()}"
+        else:
+            resolved_identity = self._resolve_identity(ai_data.archetype_name, olympic_neighbors, paralympic_neighbors)
         
+        final_olympic_img = ai_data.image_url if (ai_data.image_url and "wikimedia" in ai_data.image_url.lower() and not user_biometrics.is_paralympic) else resolved_identity["olympic_image"]
+        final_paralympic_img = ai_data.image_url if (ai_data.image_url and "wikimedia" in ai_data.image_url.lower() and user_biometrics.is_paralympic) else resolved_identity["paralympic_image"]
+
+        # Onyx Prime Logic: Construct Architect Note
+        resolved_name = resolved_identity["paralympic_match"] if user_biometrics.is_paralympic else resolved_identity["olympic_match"]
+        congruence_note = f" Matches the 1:{user_ratio:.2f} lever ratio of {resolved_name}, though your {user_biometrics.height_cm:.0f}cm stature adds a unique Tier-1 power advantage."
+        architect_note = resolved_identity["note"] + congruence_note if not congruence_applied else f"Identified 'Structural Congruence' at {ratio_delta:.3f} delta. " + resolved_identity["note"] + congruence_note
+
         # 5. Z-Score Visualization Mapping
         def sanitize(text: str) -> str:
             if not text: return ""
@@ -476,13 +537,12 @@ OUTPUT FORMAT (JSON ONLY):
             matches=ai_data.potential_matches or all_potential_archetypes,
             olympic_match=resolved_identity["olympic_match"],
             paralympic_match=resolved_identity["paralympic_match"],
-            olympic_image_url=resolved_identity["olympic_image"],
-            paralympic_image_url=resolved_identity["paralympic_image"],
-            architect_note=resolved_identity["note"],
+            olympic_image_url=final_olympic_img,
+            paralympic_image_url=final_paralympic_img,
+            architect_note=architect_note,
             system_node=ai_data.system_node
         )
 
-        # Store fully resolved object in cache (Keyed by bucket)
         self._synthesis_cache[mode_key][biometric_key] = final_output
         return final_output
 
