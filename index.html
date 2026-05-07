@@ -512,12 +512,21 @@
             const maxRadius = 180;
             const clampedZ = Math.min(Math.max(zScore, -3), 3);
             const r = ((clampedZ + 3) / 6) * maxRadius;
-            
+
             const rad = (angle - 90) * (Math.PI / 180);
             return {
                 x: cx + r * Math.cos(rad),
                 y: cy + r * Math.sin(rad)
             };
+        }
+
+        function applyImageFallback(imgId) {
+            const img = document.getElementById(imgId);
+            if (!img.src || img.src === window.location.href) {
+                img.style.display = 'none';
+                const fallback = document.getElementById(imgId + 'Fallback');
+                if (fallback) fallback.classList.remove('hidden');
+            }
         }
 
         function updateRadar(userZ, archetypeZ) {
@@ -642,7 +651,9 @@
                 olympicMatchEl.innerText = result.olympic_match;
                 paralympicMatchEl.innerText = result.paralympic_match;
                 olympicImageEl.src = result.olympic_image_url;
+                applyImageFallback('olympicImage');
                 paralympicImageEl.src = result.paralympic_image_url;
+                applyImageFallback('paralympicImage');
 
                 // 172cm Edge Case Verification: Handle long names in dual cards
                 [olympicMatchEl, paralympicMatchEl].forEach(el => {
@@ -656,6 +667,7 @@
                 // Set primary archetype image based on current toggle (Onyx Logic)
                 const currentIsParalympic = document.getElementById('toggle').checked;
                 document.getElementById('archetypeImage').src = currentIsParalympic ? result.paralympic_image_url : result.olympic_image_url;
+                applyImageFallback('archetypeImage');
 
                 // Log all matches for technical review (Multi-match array structure)
                 if (result.matches && result.matches.length > 0) {

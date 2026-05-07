@@ -286,6 +286,8 @@ class AtlasEngine:
                 raw_json = response.text.strip()
                 if raw_json.startswith("```json"):
                     raw_json = raw_json[7:-3].strip()
+                elif raw_json.startswith("```"):
+                    raw_json = raw_json[3:-3].strip()
                 
                 parsed_data = json.loads(raw_json)
                 parsed_response = AISynthesis(**parsed_data)
