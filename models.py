@@ -43,6 +43,7 @@ class AISynthesis(BaseModel):
     confidence_score: float = Field(..., ge=0, le=1)
     shared_traits: List[str]
     insight_text: str
+    image_url: str = "" # Wikimedia Commons direct link
     system_node: str  # Observability: Indicates which node synthesized the result
 
 class EngineOutput(BaseModel):
@@ -55,6 +56,8 @@ class EngineOutput(BaseModel):
     olympic_match: str
     paralympic_match: str
     olympic_image_url: str = Field(default="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop")
-    paralympic_image_url: str = Field(default="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop")
+    paralympic_image_url: str = Field(default="")
     architect_note: str
     system_node: str # Carried from AISynthesis for UI display
+    ape_index: float = 1.0
+    ape_index_label: str = "Positive Index"
