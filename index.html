@@ -607,72 +607,86 @@
                 }
 
                 const result = await response.json();
+                console.log('Backend Data Received:', result);
 
-                // Populate Result Card
-                const archTitle = document.getElementById('archetypeTitle');
-                let archName = result.archetype_match.archetype_name;
-                archTitle.innerText = archName;
+                try {
+                    // Archetype title + blueprint boxes (single archName declaration)
+                    const archName = (result.archetype_match?.archetype_name || "").toUpperCase();
+                    const archShort = archName.split(/\s+/)[0] || "—";
 
-                // Dynamic Layout Polish
-                if (archName.length > 30) {
-                    archTitle.style.fontSize = '1.25rem'; 
-                    archTitle.style.lineHeight = '1.2';
-                } else {
-                    archTitle.style.fontSize = '';
-                    archTitle.style.lineHeight = '';
+                    const archTitle = document.getElementById('archetypeTitle');
+                    if (archTitle) {
+                        archTitle.innerText = archName;
+                        archTitle.style.fontSize = archName.length > 30 ? '1.25rem' : '';
+                        archTitle.style.lineHeight = archName.length > 30 ? '1.2' : '';
+                    }
+
+                    const bpEl = document.getElementById('archetypeBlueprintName');
+                    if (bpEl) bpEl.innerText = archName || "—";
+
+                    const olEl = document.getElementById('olympicInitials');
+                    if (olEl) olEl.innerText = archShort;
+
+                    const paEl = document.getElementById('paralympicInitials');
+                    if (paEl) paEl.innerText = archShort;
+
+                    // Confidence + insight
+                    const confEl = document.getElementById('confidence');
+                    if (confEl) confEl.innerText = ((result.archetype_match?.confidence_score ?? 0) * 100).toFixed(0);
+
+                    const insightEl = document.getElementById('insightText');
+                    if (insightEl) insightEl.innerText = result.atlas_insight?.insight_text ?? "";
+
+                    // Principal stats
+                    const simEl = document.getElementById('similarityScore');
+                    if (simEl) simEl.innerText = (result.similarity_score ?? "—") + "%";
+
+                    const apeEl = document.getElementById('apeIndex');
+                    if (apeEl) apeEl.innerText = result.ape_index != null ? result.ape_index.toFixed(3) : "—";
+
+                    const apeLabelEl = document.getElementById('apeIndexLabel');
+                    if (apeLabelEl) apeLabelEl.innerText = result.ape_index_label ?? "—";
+
+                    // Athlete match names
+                    const olympicMatchEl = document.getElementById('olympicMatch');
+                    const paralympicMatchEl = document.getElementById('paralympicMatch');
+                    if (olympicMatchEl) olympicMatchEl.innerText = result.olympic_match ?? "—";
+                    if (paralympicMatchEl) paralympicMatchEl.innerText = result.paralympic_match ?? "—";
+
+                    [olympicMatchEl, paralympicMatchEl].forEach(el => {
+                        if (el) el.style.fontSize = el.innerText.length > 20 ? '0.65rem' : '';
+                    });
+
+                    if (result.matches?.length > 0) {
+                        console.log("Rowen: 'Multi-match array:'", result.matches);
+                    }
+
+                    const noteEl = document.getElementById('architectNote');
+                    if (noteEl) noteEl.innerText = `[Architect's Note]: ${result.architect_note ?? ""}`;
+
+                    // System node observability
+                    const nodeTag = document.getElementById('nodeTag');
+                    const nodeName = document.getElementById('nodeName');
+                    if (nodeTag && nodeName) {
+                        if (result.system_node) {
+                            nodeName.innerText = result.system_node;
+                            nodeTag.classList.remove('hidden');
+                        } else {
+                            nodeTag.classList.add('hidden');
+                        }
+                    }
+
+                    if (result.user_z_scores && result.archetype_z_scores) {
+                        updateRadar(result.user_z_scores, result.archetype_z_scores);
+                    }
+
+                    scanner.style.display = 'none';
+                    analysisPerformed = true;
+                    resultCard.classList.add('pulse-lime');
+
+                } catch (uiErr) {
+                    console.error("Rowen: 'UI render error after successful synthesis.'", uiErr);
                 }
-
-                document.getElementById('confidence').innerText = (result.archetype_match.confidence_score * 100).toFixed(0);
-                document.getElementById('insightText').innerText = result.atlas_insight.insight_text;
-                document.getElementById('similarityScore').innerText = result.similarity_score + "%";
-                document.getElementById('apeIndex').innerText = result.ape_index.toFixed(3);
-                document.getElementById('apeIndexLabel').innerText = result.ape_index_label;
-                
-                // Populate Matches: Dual State
-                const olympicMatchEl = document.getElementById('olympicMatch');
-                const paralympicMatchEl = document.getElementById('paralympicMatch');
-
-                olympicMatchEl.innerText = result.olympic_match;
-                paralympicMatchEl.innerText = result.paralympic_match;
-
-                // Blueprint boxes: archetype name in all three slots
-                const archName = result.archetype_match.archetype_name.toUpperCase();
-                const archShort = archName.split(/\s+/)[0];
-                document.getElementById('archetypeBlueprintName').innerText = archName;
-                document.getElementById('olympicInitials').innerText = archShort;
-                document.getElementById('paralympicInitials').innerText = archShort;
-
-                // Handle long names in dual cards
-                [olympicMatchEl, paralympicMatchEl].forEach(el => {
-                    el.style.fontSize = el.innerText.length > 20 ? '0.65rem' : '';
-                });
-
-                // Log all matches for technical review (Multi-match array structure)
-                if (result.matches && result.matches.length > 0) {
-                    console.log("Rowen: 'Multi-match array structure verified:'", result.matches);
-                }
-
-                document.getElementById('architectNote').innerText = `[Architect's Note]: ${result.architect_note}`;
-
-                // Observability: System Node
-                const nodeTag = document.getElementById('nodeTag');
-                const nodeName = document.getElementById('nodeName');
-                if (result.system_node) {
-                    nodeName.innerText = result.system_node;
-                    nodeTag.classList.remove('hidden');
-                } else {
-                    nodeTag.classList.add('hidden');
-                }
-
-                updateRadar(result.user_z_scores, result.archetype_z_scores);
-
-                
-                // Finalize Animation
-                scanner.style.display = 'none';
-                analysisPerformed = true;
-
-                // Visual Feedback: Trigger pulse animation
-                resultCard.classList.add('pulse-lime');
                 
             } catch (err) {
                 // State Reset: Display failure in the UI
