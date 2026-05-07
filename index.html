@@ -392,6 +392,15 @@
                             <p class="text-[10px] uppercase tracking-[0.4em] text-neutral-600 mb-1">Similarity Index</p>
                             <h4 id="similarityScore" class="text-4xl font-bold mono text-[#32ff7e] similarity-glow">98.4%</h4>
                         </div>
+
+                        <!-- Ape Index -->
+                        <div class="text-center mt-4">
+                            <p class="text-[10px] uppercase tracking-[0.4em] text-neutral-600 mb-1">Ape Index</p>
+                            <div class="flex items-center justify-center gap-3">
+                                <span id="apeIndex" class="text-2xl font-bold mono text-[#32ff7e]">—</span>
+                                <span id="apeIndexLabel" class="text-[10px] mono uppercase tracking-widest text-neutral-400">—</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -491,6 +500,8 @@
                     resultCard.classList.add('hidden');
                     // Reset state for a clean slate
                     document.getElementById('similarityScore').innerText = "0.0%";
+                    document.getElementById('apeIndex').innerText = "—";
+                    document.getElementById('apeIndexLabel').innerText = "—";
                     document.getElementById('athleteMatch').innerText = "Loading...";
                 }
             });
@@ -619,6 +630,8 @@
                 document.getElementById('confidence').innerText = (result.archetype_match.confidence_score * 100).toFixed(0);
                 document.getElementById('insightText').innerText = result.atlas_insight.insight_text;
                 document.getElementById('similarityScore').innerText = result.similarity_score + "%";
+                document.getElementById('apeIndex').innerText = result.ape_index.toFixed(3);
+                document.getElementById('apeIndexLabel').innerText = result.ape_index_label;
                 
                 // Populate Matches: Dual State
                 const olympicMatchEl = document.getElementById('olympicMatch');
