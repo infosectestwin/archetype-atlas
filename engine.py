@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import numpy as np
 import os
@@ -534,6 +535,12 @@ OUTPUT SCHEMA:
 
         # Onyx Prime Logic: Construct Architect Note
         resolved_name = resolved_identity["paralympic_match"] if user_biometrics.is_paralympic else resolved_identity["olympic_match"]
+
+        # Sanitize Athlete_ placeholders that may leak from the historical dataset context
+        _clean = lambda s: re.sub(r'\bAthlete_\w*', resolved_name, s) if s else s
+        ai_data.insight_text = _clean(ai_data.insight_text)
+        ai_data.potential_matches = [m for m in (ai_data.potential_matches or []) if 'Athlete_' not in m]
+
         congruence_note = f" Matches the 1:{user_ratio:.2f} lever ratio of {resolved_name}, though your {user_biometrics.height_cm:.0f}cm stature adds a unique Tier-1 power advantage."
         architect_note = resolved_identity["note"] + congruence_note if not congruence_applied else f"Identified 'Structural Congruence' at {ratio_delta:.3f} delta. " + resolved_identity["note"] + congruence_note
 
