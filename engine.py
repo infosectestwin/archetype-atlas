@@ -389,6 +389,7 @@ class AtlasEngine:
 
         # --- RATIO-BASED SCORING LOGIC (ONYX PRIME) ---
         user_ratio = user_biometrics.wingspan_cm / user_biometrics.height_cm
+        ape_index, ape_index_label = compute_ape_index(user_biometrics.wingspan_cm, user_biometrics.height_cm)
         athlete_ratio = top_match['wingspan_cm'] / top_match['height_cm']
         ratio_delta_pct = abs(user_ratio - athlete_ratio) / athlete_ratio
         
@@ -501,8 +502,8 @@ OUTPUT SCHEMA:
         else:
             resolved_identity = self._resolve_identity(ai_data.archetype_name, olympic_neighbors, paralympic_neighbors)
         
-        final_olympic_img = ai_data.image_url if (ai_data.image_url and "wikimedia" in ai_data.image_url.lower() and not user_biometrics.is_paralympic) else resolved_identity["olympic_image"]
-        final_paralympic_img = ai_data.image_url if (ai_data.image_url and "wikimedia" in ai_data.image_url.lower() and user_biometrics.is_paralympic) else resolved_identity["paralympic_image"]
+        final_olympic_img = resolved_identity["olympic_image"]
+        final_paralympic_img = resolved_identity["paralympic_image"]
 
         # Onyx Prime Logic: Construct Architect Note
         resolved_name = resolved_identity["paralympic_match"] if user_biometrics.is_paralympic else resolved_identity["olympic_match"]
@@ -550,7 +551,9 @@ OUTPUT SCHEMA:
             olympic_image_url=final_olympic_img,
             paralympic_image_url=final_paralympic_img,
             architect_note=architect_note,
-            system_node=ai_data.system_node
+            system_node=ai_data.system_node,
+            ape_index=ape_index,
+            ape_index_label=ape_index_label,
         )
 
         self._synthesis_cache[mode_key][biometric_key] = final_output
