@@ -16,6 +16,16 @@ class InitializationError(Exception):
     """Raised when the Atlas Engine cannot be properly initialized."""
     pass
 
+def compute_ape_index(wingspan_cm: float, height_cm: float) -> tuple[float, str]:
+    index = round(wingspan_cm / height_cm, 3)
+    if index > 1.03:
+        label = "Elite Reach"
+    elif index < 1.00:
+        label = "Compact Profile"
+    else:
+        label = "Positive Index"
+    return index, label
+
 # Hall of Fame Mappings with Image Support
 HALL_OF_FAME = {
     "compact_dynamo": {
