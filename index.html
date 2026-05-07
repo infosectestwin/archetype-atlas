@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ARCHETYPE ATLAS</title>
+    <title>ARCHETYPE ATLAS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -218,7 +218,7 @@
 
     <!-- Header Section -->
     <header class="mb-12 text-center">
-        <h1 class="wordmark text-sm md:text-xl text-white opacity-80 mb-2 uppercase">THE ARCHETYPE ATLAS</h1>
+        <h1 class="wordmark mono text-sm md:text-xl text-white opacity-80 mb-2 uppercase">ARCHETYPE ATLAS</h1>
         <p class="text-xs text-neutral-500 uppercase tracking-widest">Digital Mirror // Synthesis Engine</p>
     </header>
 
@@ -285,7 +285,7 @@
                             <span id="archetypeBlueprintName" class="text-[9px] font-bold mono text-[#32ff7e] uppercase tracking-wider text-center leading-tight">—</span>
                         </div>
                         <div>
-                            <h2 id="archetypeTitle" class="text-3xl font-bold text-white tracking-tight uppercase">THE POWERHOUSE</h2>
+                            <h2 id="archetypeTitle" class="text-3xl font-bold text-white tracking-tight uppercase">POWERHOUSE</h2>
                             <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">Matched Archetype // Confidence: <span id="confidence">98</span>%</p>
                         </div>
                     </div>
@@ -612,7 +612,8 @@
                 try {
                     // Archetype title + blueprint boxes (single archName declaration)
                     const archName = (result.archetype_match?.archetype_name || "").toUpperCase();
-                    const archShort = archName.split(/\s+/)[0] || "—";
+                    const archWords = archName.split(/\s+/).filter(w => w && w !== 'THE');
+                    const archShort = archWords[0] || "—";
 
                     const archTitle = document.getElementById('archetypeTitle');
                     if (archTitle) {
