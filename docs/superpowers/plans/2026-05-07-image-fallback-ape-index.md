@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Harden image resolution to use HALL_OF_FAME Unsplash URLs exclusively, add a labeled Ape Index stat to the result card, and align the `aerobic_engine` HALL_OF_FAME entry with the README source of truth (Jessica Long).
+**Goal:** Harden image resolution to use HALL_OF_FAME Unsplash URLs exclusively, add a labeled Ape Index stat to the result card, and align the `aerobic_engine` HALL_OF_FAME entry with the README source of truth (Elite Paralympic Swimmer).
 
 **Architecture:** Targeted surgical fixes across three files — `models.py` (new fields + default fix), `engine.py` (data correction + wikimedia gate removal + ape_index computation), `index.html` (onerror handlers + placeholder divs + new stat block + JS population). A new module-level pure function `compute_ape_index` is extracted so it can be unit-tested without instantiating the engine.
 
@@ -121,7 +121,7 @@ git commit -m "feat: add ape_index fields to EngineOutput; fix paralympic_image_
 
 ---
 
-### Task 2: Fix `HALL_OF_FAME["aerobic_engine"]` — swap in Jessica Long
+### Task 2: Fix `HALL_OF_FAME["aerobic_engine"]` — swap in Elite Paralympic Swimmer
 
 **Files:**
 - Modify: `engine.py:29-34`
@@ -134,8 +134,8 @@ Create `tests/test_engine_data.py`:
 ```python
 from engine import HALL_OF_FAME
 
-def test_aerobic_engine_paralympic_is_jessica_long():
-    assert HALL_OF_FAME["aerobic_engine"]["paralympic"] == "Jessica Long"
+def test_aerobic_engine_paralympic_is_elite_paralympic_swimmer():
+    assert HALL_OF_FAME["aerobic_engine"]["paralympic"] == "Elite Paralympic Swimmer"
 
 def test_aerobic_engine_images_are_unsplash():
     entry = HALL_OF_FAME["aerobic_engine"]
@@ -161,7 +161,7 @@ def test_all_entries_use_unsplash():
 .venv\Scripts\python -m pytest tests/test_engine_data.py -v
 ```
 
-Expected: `test_aerobic_engine_paralympic_is_jessica_long` FAILS (`Tatyana McFadden != Jessica Long`).
+Expected: `test_aerobic_engine_paralympic_is_elite_paralympic_swimmer` FAILS (`Elite Paralympic Racer != Elite Paralympic Swimmer`).
 
 - [ ] **Step 3: Fix `HALL_OF_FAME["aerobic_engine"]` in `engine.py`**
 
@@ -169,8 +169,8 @@ Locate the `aerobic_engine` entry (around line 28) and replace the `paralympic` 
 
 ```python
 "aerobic_engine": {
-    "olympic": "Katie Ledecky",
-    "paralympic": "Jessica Long",
+    "olympic": "Elite Olympic Swimmer",
+    "paralympic": "Elite Paralympic Swimmer",
     "olympic_image": "https://images.unsplash.com/photo-1530549387631-ce01ff996f9c?q=80&w=2070&auto=format&fit=crop",
     "paralympic_image": "https://images.unsplash.com/photo-1519315901367-f34ff9154487?q=80&w=2070&auto=format&fit=crop",
     "note": "Hydrodynamic efficiency and lean mass profile exemplify the 'Aerobic Engine' blueprint across disciplines."
@@ -191,7 +191,7 @@ Expected: all 4 tests `PASSED`.
 
 ```
 git add engine.py tests/test_engine_data.py
-git commit -m "fix: swap Jessica Long into aerobic_engine; fix duplicate image URLs in aquatic_glider"
+git commit -m "fix: swap Elite Paralympic Swimmer into aerobic_engine; fix duplicate image URLs in aquatic_glider"
 ```
 
 ---

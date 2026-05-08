@@ -1,7 +1,7 @@
 from engine import HALL_OF_FAME, compute_ape_index
 
-def test_aerobic_engine_paralympic_is_jessica_long():
-    assert HALL_OF_FAME["aerobic_engine"]["paralympic"] == "Jessica Long"
+def test_aerobic_engine_paralympic_title():
+    assert HALL_OF_FAME["aerobic_engine"]["paralympic"] == "High-Capacity Para-Swimmer"
 
 def test_aerobic_engine_images_are_unsplash():
     entry = HALL_OF_FAME["aerobic_engine"]

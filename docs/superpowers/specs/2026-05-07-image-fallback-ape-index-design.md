@@ -80,11 +80,11 @@ Font: `JetBrains Mono`. Value font-size slightly smaller than similarity score. 
 ## 3. README / Code Alignment
 
 ### Problem
-`HALL_OF_FAME["aerobic_engine"]` has `Tatyana McFadden` as the Paralympic counterpart to Katie Ledecky. The README validation matrix (the source of truth) specifies **Jessica Long** — a direct swimming-to-swimming parity match.
+`HALL_OF_FAME["aerobic_engine"]` has `Elite Paralympic Racer` as the Paralympic counterpart to `Elite Olympic Swimmer`. The README validation matrix (the source of truth) specifies **Elite Paralympic Swimmer** — a direct swimming-to-swimming parity match.
 
 ### Solution
 **`engine.py` `HALL_OF_FAME["aerobic_engine"]`:**
-- `paralympic` → `"Jessica Long"`
+- `paralympic` → `"Elite Paralympic Swimmer"`
 - `paralympic_image` → high-quality Paralympic swimming Unsplash URL (distinct from the Olympic swimming URL to avoid visual duplication). URL must be verified live during implementation; if the preferred photo is unavailable, use the nearest available Paralympic aquatics shot from Unsplash.
 
 ---

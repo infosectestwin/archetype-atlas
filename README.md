@@ -21,25 +21,26 @@ The engine does not rely on simple comparisons. It utilizes **Onyx Protocol Z-Sc
 - **Weighted Specificity:** For athletes above 185cm, the engine applies a 1.5x multiplier to the Weight parameter to distinguish between the lean profiles of Track & Field and the mass-heavy profiles of Swimming.
 - **Ape Index (The Driving Metric):** The engine's primary differentiator is the **Ape Index**, defined as:
   $$\text{Ape Index} = \frac{\text{Wingspan}}{\text{Height}}$$
-  This ratio is the mathematical "engine" that drives the specific athlete matches. It allows the Atlas to identify parity across different physical scales—matching the elongated reach of Michael Phelps (Aquatic Glider) or the precise, balanced levers of Lee Kiefer (Agile Tactician) to their Paralympic counterparts with clinical accuracy.
+  This ratio is the mathematical "engine" that drives the specific archetype matches. It allows the Atlas to identify parity across different physical scales—matching the elongated reach of an Elite Hydrodynamic Swimmer (Aquatic Glider) or the precise, balanced levers of a High-Output Fencer (Agile Tactician) to their Paralympic counterparts with clinical accuracy.
 
-## Validation Matrix (Calibration Results v1.0.5)
-The Atlas has been surgically calibrated against known elite parities:
+## Validation Matrix (Calibration Results v1.0.6)
+The Atlas has been surgically calibrated against known elite biometric parities:
 
-| Profile Input | Height | Weight | Wingspan | Matched Archetype | Historical Parity Counterparts |
+| Profile Input | Height | Weight | Wingspan | Matched Archetype | Biometric Archetype Counterparts |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Case 1 (Fluid)** | 198cm | 90kg | 206cm | **The Aquatic Glider** | Michael Phelps [MP] // Mallory Weggemann |
-| **Case 2 (Fencing)** | 183cm | 73kg | 193cm | **The Agile Tactician** | Lee Kiefer [LK] // Bebe Vio |
-| **Case 3 (Track)** | 198cm | 85kg | 235cm | **The Kinetic Lever** | Tara Davis-Woodhall // Hunter Woodhall |
-| **Case 4 (Swim)** | 168cm | 55kg | 170cm | **The Aerobic Engine** | Katie Ledecky // Jessica Long |
-| **Case 5 (Force)** | 200cm | 130kg | 210cm | **The Powerhouse** | Ryan Crouser // Jeremy Campbell |
-| **Case 6 (Torque)** | 142cm | 47kg | 142cm | **The Compact Dynamo** | Simone Biles // Bobby Body [Focus: Rotational Torque & CoM] |
+| **Case 1 (Fluid)** | 198cm | 90kg | 206cm | **The Aquatic Glider** | Elite Hydrodynamic Swimmer // High-Efficiency Para-Swimmer |
+| **Case 2 (Fencing)** | 183cm | 73kg | 193cm | **The Agile Tactician** | High-Output Fencer // Precision Wheelchair Fencer |
+| **Case 3 (Track)** | 198cm | 85kg | 235cm | **The Kinetic Lever** | Long-Lever Track Specialist // Mechanical Propulsion Specialist |
+| **Case 4 (Swim)** | 168cm | 55kg | 170cm | **The Aerobic Engine** | Elite Endurance Swimmer // High-Capacity Para-Swimmer |
+| **Case 5 (Force)** | 200cm | 130kg | 210cm | **The Powerhouse** | Heavy-Mass Shotput Specialist // High-Torque Discus Archetype |
+| **Case 6 (Torque)** | 142cm | 47kg | 142cm | **The Compact Dynamo** | Elite Explosive Gymnast // Low-Gravity Powerlifter |
 
-*Similarity scores represent the biometric proximity to the archetype's statistical mean. Scores >80% indicate high-confidence functional alignment with the historical athlete's mechanical blueprint.*
+*Similarity scores represent the biometric proximity to the archetype's statistical mean. Scores >80% indicate high-confidence functional alignment with the mechanical blueprint.*
 
-## Stateless Security Architecture
-The Atlas is built on a "Zero-Trust" foundation, utilizing **Stateless Security** to protect sensitive biometric data and credentials:
+## Stateless & Privacy-First Security Architecture
+The Atlas is built on a "Zero-Retention" foundation, prioritizing user privacy and data compliance:
 
+- **Anonymous Biometric Matches:** The system has transitioned to a Privacy-First Architecture. Specific athlete names are stripped from all outputs and replaced with Generic Archetype Titles based purely on biometric data (e.g., 'Elite Endurance Swimmer').
 - **Google Cloud Run:** The application exists as a stateless containerized service. No user biometrics are persisted after the synthesis cycle completes.
 - **Secret Manager:** API credentials (GOOGLE_API_KEY) are never stored in the codebase or environment files. They are injected at runtime via Google Secret Manager using the `:latest` version tag.
 - **Ephemeral Infrastructure:** Each request is an isolated event, ensuring a clean slate and maximum privacy for the Onyx Protocol.

@@ -24,7 +24,7 @@ def test_run_atlas_test():
 
         # Profile 3: The Aquatic Glider (Fluid Dynamics)
         # Target: 195-210cm / Wingspan 205-225cm (Ratio ~1.04)
-        # Initials: MP (Michael Phelps)
+        # Archetype: Elite Swimmer
         glider_profile = AthleteBiometrics(
             athlete_id=3, name="Fluid_Sigma", height_cm=198.0, weight_kg=90.0, wingspan_cm=206.0,
             sport="TBD", year=2026, is_paralympic=False
@@ -32,7 +32,7 @@ def test_run_atlas_test():
 
         # Profile 4: The Agile Tactician (Precision)
         # Target: 181-184cm / 71-75kg (Lock at 183cm)
-        # Initials: LK (Lee Kiefer)
+        # Archetype: Elite Fencer
         tactician_profile = AthleteBiometrics(
             athlete_id=4, name="Precision_Omega", height_cm=183.0, weight_kg=73.0, wingspan_cm=193.0,
             sport="TBD", year=2026, is_paralympic=False

@@ -27,53 +27,53 @@ def compute_ape_index(wingspan_cm: float, height_cm: float) -> tuple[float, str]
         label = "Positive Index"
     return index, label
 
-# Hall of Fame Mappings with Image Support
+# Hall of Fame Mappings with Image Support - Privacy-First Architecture
 HALL_OF_FAME = {
     "compact_dynamo": {
-        "olympic": "Simone Biles",
-        "paralympic": "Bobby Body",
+        "olympic": "Elite Explosive Gymnast",
+        "paralympic": "Low-Gravity Powerlifter",
         "olympic_image": "https://images.unsplash.com/photo-1563297122-f1917f938260?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
         "note": "Their shared low center of gravity and extreme power-to-weight ratio create a near-perfect biomechanical parity."
     },
     "aerobic_engine": {
-        "olympic": "Katie Ledecky",
-        "paralympic": "Jessica Long",
+        "olympic": "Elite Endurance Swimmer",
+        "paralympic": "High-Capacity Para-Swimmer",
         "olympic_image": "https://images.unsplash.com/photo-1530549387631-ce01ff996f9c?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1519315901367-f34ff9154487?q=80&w=2070&auto=format&fit=crop",
         "note": "Their Hydrodynamic efficiency and lean mass profile exemplify the 'Aerobic Engine' blueprint across disciplines."
     },
     "kinetic_lever": {
-        "olympic": "Tara Davis-Woodhall",
-        "paralympic": "Hunter Woodhall",
+        "olympic": "Long-Lever Track Specialist",
+        "paralympic": "Mechanical Propulsion Specialist",
         "olympic_image": "https://images.unsplash.com/photo-1461896756985-215053158f33?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1517438476312-10d79c07750d?q=80&w=2070&auto=format&fit=crop",
         "note": "Mechanical leverage provided by their long-lever biometric profiles suggests a unified blueprint for horizontal propulsion."
     },
     "powerhouse": {
-        "olympic": "Ryan Crouser",
-        "paralympic": "Jeremy Campbell",
+        "olympic": "Heavy-Mass Shotput Specialist",
+        "paralympic": "High-Torque Discus Archetype",
         "olympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop",
         "note": "High-mass stability and explosive torque generation anchor both athletes within the 'Powerhouse' archetype."
     },
     "aquatic_glider": {
-        "olympic": "Michael Phelps",
-        "paralympic": "Mallory Weggemann",
+        "olympic": "Elite Hydrodynamic Swimmer",
+        "paralympic": "High-Efficiency Para-Swimmer",
         "olympic_image": "https://images.unsplash.com/photo-1530549387631-ce01ff996f9c?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1519315901367-f34ff9154487?q=80&w=2070&auto=format&fit=crop",
         "note": "Extreme wingspan-to-height ratios potentially indicate a shared mastery of fluid dynamics."
     },
     "agile_tactician": {
-        "olympic": "Lee Kiefer",
-        "paralympic": "Bebe Vio",
+        "olympic": "High-Output Fencer",
+        "paralympic": "Precision Wheelchair Fencer",
         "olympic_image": "https://images.unsplash.com/photo-1517438476312-10d79c07750d?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1461896756985-215053158f33?q=80&w=2070&auto=format&fit=crop",
         "note": "Balanced biometrics and superior reaction mechanics suggest a unified tactical profile."
     },
     "fencing_legend": {
-        "olympic": "Lee Kiefer",
-        "paralympic": "Piers Gilliver",
+        "olympic": "Elite Lever-Based Fencer",
+        "paralympic": "High-Precision Combat Archetype",
         "olympic_image": "https://images.unsplash.com/photo-1517438476312-10d79c07750d?q=80&w=2070&auto=format&fit=crop",
         "paralympic_image": "https://images.unsplash.com/photo-1461896756985-215053158f33?q=80&w=2070&auto=format&fit=crop",
         "note": "Elite lever-based reaction mechanics define this fencing blueprint."
@@ -456,19 +456,19 @@ class AtlasEngine:
         system_instruction = f"""
 You are Rowen, Lead Architect of The Archetype Atlas. Return a JSON object only — no markdown, no prose outside the JSON.
 
-TONE: Clinical, mechanical, precise. No bullet points. No lists. No comma-separated name clusters.
+TONE: Clinical, mechanical, precise. No bullet points. No lists.
 
 CORE DIRECTIVE:
 Identify the single best Archetype Blueprint for the user's biometric profile.
 Prioritise the archetype explicitly present in the HISTORICAL CONTEXT.
 
-MANDATORY RULES:
-1. insight_text must be a single cohesive paragraph of 2-3 sentences. Write it as flowing prose.
-2. UNIQUENESS: If one athlete is the primary biometric peer, name them exactly once. Do not build a cluster of athletes when the data points to a singular elite match.
-3. CLINICAL FOCUS: Analyse mechanical parity — reach, height, Ape Index. Avoid generic praise.
-4. Use conditional phrasing: 'could', 'might', 'potentially', 'suggests'.
-5. Focus EXCLUSIVELY on the {target_mode} filter for the primary analysis.
-6. NEVER use placeholder IDs such as 'Athlete_123'. Use only real names from the HALL OF FAME MAPPINGS below.
+MANDATORY PRIVACY RULES:
+1. NEVER output a specific person's name (e.g., no historical celebrity names).
+2. Use ONLY the Generic Archetype Titles provided in the HALL OF FAME MAPPINGS (e.g., 'Elite Endurance Swimmer').
+3. Insight text must focus PURELY on Biometric Traits (Ape Index, aerobic capacity, limb-to-torso ratio, mechanical parity).
+4. NEVER reference a specific historical figure's life, career, or medals.
+5. Use conditional phrasing: 'could', 'might', 'potentially', 'suggests'.
+6. Focus EXCLUSIVELY on the {target_mode} filter for the primary analysis.
 7. JSON ONLY. No explanation, no markdown fences, no extra keys.
 """
 
@@ -479,22 +479,22 @@ HISTORICAL CONTEXT (Top 5 Closest Biometric Matches):
 USER DATA:
 Height: {user_biometrics.height_cm}cm, Weight: {user_biometrics.weight_kg}kg, Wingspan: {user_biometrics.wingspan_cm}cm
 
-HALL OF FAME MAPPINGS:
-- The Agile Tactician: Lee Kiefer (Fencing) / Bebe Vio (Wheelchair Fencing).
-- The Kinetic Lever: Tara Davis-Woodhall (Long Jump) / Hunter Woodhall (Para-Athletics).
-- The Aerobic Engine: Katie Ledecky (Swimming) / Jessica Long (Para-Swimming).
-- The Powerhouse: Ryan Crouser (Shot Put) / Jeremy Campbell (Para-Discus).
-- The Compact Dynamo: Simone Biles (Gymnastics) / Bobby Body (Para-Powerlifting).
-- The Aquatic Glider: Michael Phelps (Swimming) / Mallory Weggemann (Para-Swimming).
+HALL OF FAME MAPPINGS (Generic Archetype Titles):
+- The Agile Tactician: High-Output Fencer (Olympic) / Precision Wheelchair Fencer (Paralympic).
+- The Kinetic Lever: Long-Lever Track Specialist (Olympic) / Mechanical Propulsion Specialist (Paralympic).
+- The Aerobic Engine: Elite Endurance Swimmer (Olympic) / High-Capacity Para-Swimmer (Paralympic).
+- The Powerhouse: Heavy-Mass Shotput Specialist (Olympic) / High-Torque Discus Archetype (Paralympic).
+- The Compact Dynamo: Elite Explosive Gymnast (Olympic) / Low-Gravity Powerlifter (Paralympic).
+- The Aquatic Glider: Elite Hydrodynamic Swimmer (Olympic) / High-Efficiency Para-Swimmer (Paralympic).
 
 OUTPUT SCHEMA:
 {{
   "archetype_name": "Primary Archetype Blueprint",
-  "potential_matches": ["Athlete Name 1", "Athlete Name 2"],
+  "potential_matches": ["Generic Archetype Title 1", "Generic Archetype Title 2"],
   "confidence_score": 0.95,
   "shared_traits": ["trait 1", "trait 2"],
   "insight_text": "Technical analysis focused on the {target_mode} alignment.",
-  "image_url": "Direct Wikimedia Link (if applicable)",
+  "image_url": "Direct Unsplash Link from Context",
   "system_node": "Onyx Prime"
 }}
 """
@@ -523,8 +523,8 @@ OUTPUT SCHEMA:
         # Check if AI triggered the 'No direct celebrity match' fallback
         if "no direct celebrity match" in ai_data.archetype_name.lower() or (ai_data.potential_matches and "no direct celebrity match" in ai_data.potential_matches[0].lower()):
             resolved_identity = {
-                "olympic_match": "N/A",
-                "paralympic_match": "N/A",
+                "olympic_match": "Anonymous Biometric Match",
+                "paralympic_match": "Anonymous Biometric Match",
                 "olympic_image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
                 "paralympic_image": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop",
                 "note": "Biometric profile represents a unique athletic blueprint with no direct high-profile match."
@@ -543,7 +543,7 @@ OUTPUT SCHEMA:
         # Sanitize Athlete_ placeholders that may leak from the historical dataset context
         _clean = lambda s: re.sub(r'\bAthlete_\w*', resolved_name, s) if s else s
         ai_data.insight_text = _clean(ai_data.insight_text)
-        # Filter placeholders and deduplicate (Lee Kiefer appears in both agile_tactician and fencing_legend)
+        # Filter placeholders and deduplicate
         ai_data.potential_matches = list(dict.fromkeys(
             m for m in (ai_data.potential_matches or []) if 'Athlete_' not in m
         ))
@@ -565,7 +565,7 @@ OUTPUT SCHEMA:
 
         ai_data.insight_text = _cap_name_occurrences(ai_data.insight_text)
 
-        parity_note = f" Structural parity confirmed with {resolved_name}."
+        parity_note = f" Biometric parity confirmed with {resolved_name}."
         architect_note = resolved_identity["note"] + parity_note
         if congruence_applied:
             architect_note = "Structural Congruence detected. " + architect_note

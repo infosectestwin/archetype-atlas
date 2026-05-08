@@ -3,7 +3,7 @@ import random
 
 # Lead Architect Rowen's Archetype Blueprints
 # Anchor Recalibration: Shifting ranges to fix Target Swaps
-# Case 5 Integration: Tightening Compact Dynamo for Biles/Body Parity
+# Case 5 Integration: Tightening Compact Dynamo for Elite Gymnast/Powerlifter Parity
 ARCHETYPES = {
     "powerhouse": {
         "display_name": "The Powerhouse",
