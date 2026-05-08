@@ -103,7 +103,14 @@ class AtlasEngine:
         if not os.path.exists(csv_path):
             raise InitializationError(f"Historical dataset not found at {csv_path}. Run generate_atlas_data.py first.")
             
-        self.df = pd.read_csv(csv_path)
+        # [SECURITY LOCKDOWN] Load and immediately filter to ensure 0% PII exposure.
+        # We strictly use 'athlete_id' and biometric data, ignoring any 'name' columns.
+        full_df = pd.read_csv(csv_path)
+        required_cols = [
+            "athlete_id", "height_cm", "weight_kg", "wingspan_cm", 
+            "sport", "is_paralympic", "archetype"
+        ]
+        self.df = full_df[required_cols].copy()
         
         # Establishing the biometric baseline for Z-score normalization
         self.biometric_cols = ["height_cm", "weight_kg", "wingspan_cm"]
@@ -463,9 +470,9 @@ Identify the single best Archetype Blueprint for the user's biometric profile.
 Prioritise the archetype explicitly present in the HISTORICAL CONTEXT.
 
 MANDATORY PRIVACY RULES:
-1. NEVER output a specific person's name (e.g., no historical celebrity names).
-2. Use ONLY the Generic Archetype Titles provided in the HALL OF FAME MAPPINGS (e.g., 'Elite Endurance Swimmer').
-3. Insight text must focus PURELY on Biometric Traits (Ape Index, aerobic capacity, limb-to-torso ratio, mechanical parity).
+1. Under NO circumstances should the system output an athlete's name.
+2. Use ONLY the Biometric Archetype Titles provided in the HALL OF FAME MAPPINGS (e.g., 'Elite Hydrodynamic Swimmer', 'High-Capacity Para-Swimmer').
+3. Insight text must focus PURELY on mechanical traits: Mesomorphic build, Mechanical parity, Drag reduction, Ape Index, and limb-to-torso ratios.
 4. NEVER reference a specific historical figure's life, career, or medals.
 5. Use conditional phrasing: 'could', 'might', 'potentially', 'suggests'.
 6. Focus EXCLUSIVELY on the {target_mode} filter for the primary analysis.
