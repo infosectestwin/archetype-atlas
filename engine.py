@@ -454,18 +454,22 @@ class AtlasEngine:
         target_mode = "PARALYMPIC" if user_biometrics.is_paralympic else "OLYMPIC"
         
         system_instruction = f"""
-Act as 'Rowen', Lead Architect of The Archetype Atlas. 
-Your tone is clean, rational, and technical.
+You are Rowen, Lead Architect of The Archetype Atlas. Return a JSON object only — no markdown, no prose outside the JSON.
+
+TONE: Clinical, mechanical, precise. No bullet points. No lists. No comma-separated name clusters.
 
 CORE DIRECTIVE:
-Identify which 'Archetype Blueprint' the user fits into based on their biometrics and the historical context provided.
-You MUST prioritize the archetype explicitly mentioned in the HISTORICAL CONTEXT.
+Identify the single best Archetype Blueprint for the user's biometric profile.
+Prioritise the archetype explicitly present in the HISTORICAL CONTEXT.
 
 MANDATORY RULES:
-1. Speak as Rowen (Lead Architect).
-2. Use conditional phrasing ('could', 'might', 'potentially', 'suggests').
-3. Focus synthesis EXCLUSIVELY on the {target_mode} filter.
-4. JSON ONLY: Return a valid JSON object matching the AISynthesis schema.
+1. insight_text must be a single cohesive paragraph of 2-3 sentences. Write it as flowing prose.
+2. UNIQUENESS: If one athlete is the primary biometric peer, name them exactly once. Do not build a cluster of athletes when the data points to a singular elite match.
+3. CLINICAL FOCUS: Analyse mechanical parity — reach, height, Ape Index. Avoid generic praise.
+4. Use conditional phrasing: 'could', 'might', 'potentially', 'suggests'.
+5. Focus EXCLUSIVELY on the {target_mode} filter for the primary analysis.
+6. NEVER use placeholder IDs such as 'Athlete_123'. Use only real names from the HALL OF FAME MAPPINGS below.
+7. JSON ONLY. No explanation, no markdown fences, no extra keys.
 """
 
         prompt = f"""
@@ -543,6 +547,23 @@ OUTPUT SCHEMA:
         ai_data.potential_matches = list(dict.fromkeys(
             m for m in (ai_data.potential_matches or []) if 'Athlete_' not in m
         ))
+
+        # Post-processing safety net: cap each known athlete name at ≤ 2 appearances
+        def _cap_name_occurrences(text: str, max_count: int = 2) -> str:
+            if not text:
+                return text
+            known = sorted(
+                {v[k] for v in HALL_OF_FAME.values() for k in ("olympic", "paralympic")
+                 if v.get(k) and v[k] not in ("N/A", "")},
+                key=len, reverse=True  # longest-first avoids partial-match clobbering
+            )
+            for name in known:
+                parts = text.split(name)
+                if len(parts) > max_count + 1:
+                    text = name.join(parts[:max_count + 1]) + "".join(parts[max_count + 1:])
+            return re.sub(r' {2,}', ' ', text).strip()
+
+        ai_data.insight_text = _cap_name_occurrences(ai_data.insight_text)
 
         parity_note = f" Structural parity confirmed with {resolved_name}."
         architect_note = resolved_identity["note"] + parity_note
