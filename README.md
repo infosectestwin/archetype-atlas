@@ -19,18 +19,21 @@ The engine does not rely on simple comparisons. It utilizes **Onyx Protocol Z-Sc
     - **Tier 2 (Relay Protocol):** Gemini 2.5 Pro via Google Gemini API.
     - **Tier 3 (Core Protocol):** Gemini 2.5 Flash via Google Gemini API.
 - **Weighted Specificity:** For athletes above 185cm, the engine applies a 1.5x multiplier to the Weight parameter to distinguish between the lean profiles of Track & Field and the mass-heavy profiles of Swimming.
-- **Wingspan Ratio:** A primary feature used to identify "Kinetic Levers"—athletes whose structural reach exceeds their stature by a significant margin.
+- **Ape Index (The Driving Metric):** The engine's primary differentiator is the **Ape Index**, defined as:
+  $$\text{Ape Index} = \frac{\text{Wingspan}}{\text{Height}}$$
+  This ratio is the mathematical "engine" that drives the specific athlete matches. It allows the Atlas to identify parity across different physical scales—matching the elongated reach of Michael Phelps (Aquatic Glider) or the precise, balanced levers of Lee Kiefer (Agile Tactician) to their Paralympic counterparts with clinical accuracy.
 
 ## Validation Matrix (Calibration Results v1.0.5)
 The Atlas has been surgically calibrated against known elite parities:
 
 | Profile Input | Height | Weight | Wingspan | Matched Archetype | Historical Parity Counterparts |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Case 1 (Track)** | 198cm | 85kg | 235cm | **The Kinetic Lever** | Tara Davis-Woodhall // Hunter Woodhall |
-| **Case 2 (Fencing)** | 183cm | 73kg | 193cm | **The Agile Tactician** | Lee Kiefer // Bebe Vio |
-| **Case 3 (Swim)** | 168cm | 55kg | 170cm | **The Aerobic Engine** | Katie Ledecky // Jessica Long |
-| **Case 4 (Force)** | 200cm | 130kg | 210cm | **The Powerhouse** | Ryan Crouser // Jeremy Campbell |
-| **Case 5 (Torque)** | 142cm | 47kg | 142cm | **The Compact Dynamo** | Simone Biles // Bobby Body [Focus: Rotational Torque & CoM] |
+| **Case 1 (Fluid)** | 198cm | 90kg | 206cm | **The Aquatic Glider** | Michael Phelps [MP] // Mallory Weggemann |
+| **Case 2 (Fencing)** | 183cm | 73kg | 193cm | **The Agile Tactician** | Lee Kiefer [LK] // Bebe Vio |
+| **Case 3 (Track)** | 198cm | 85kg | 235cm | **The Kinetic Lever** | Tara Davis-Woodhall // Hunter Woodhall |
+| **Case 4 (Swim)** | 168cm | 55kg | 170cm | **The Aerobic Engine** | Katie Ledecky // Jessica Long |
+| **Case 5 (Force)** | 200cm | 130kg | 210cm | **The Powerhouse** | Ryan Crouser // Jeremy Campbell |
+| **Case 6 (Torque)** | 142cm | 47kg | 142cm | **The Compact Dynamo** | Simone Biles // Bobby Body [Focus: Rotational Torque & CoM] |
 
 *Similarity scores represent the biometric proximity to the archetype's statistical mean. Scores >80% indicate high-confidence functional alignment with the historical athlete's mechanical blueprint.*
 
