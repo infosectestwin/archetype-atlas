@@ -274,6 +274,7 @@ class AtlasEngine:
         if hof_entry:
             print(f"Rowen: '[Identity] \"{archetype_name}\" → key [{matched_key}] | olympic: ...{hof_entry['olympic_image'][-40:]} | paralympic: ...{hof_entry['paralympic_image'][-40:]}'")
             return {
+                "matched_key": matched_key,
                 "olympic_match": hof_entry["olympic"],
                 "paralympic_match": hof_entry["paralympic"],
                 "olympic_image": hof_entry["olympic_image"],
@@ -286,6 +287,7 @@ class AtlasEngine:
             p_name = paralympic_anchor['name'] if paralympic_anchor is not None else "Historical Profile Verified"
             print(f"Rowen: '[Identity] WARNING — no HOF match for \"{archetype_name}\" (normalized: \"{normalized_key}\"). Using General Athlete fallback.'")
             return {
+                "matched_key": top_match_id,
                 "olympic_match": o_name if "Athlete_" not in o_name else "Elite Olympic Anchor",
                 "paralympic_match": p_name if "Athlete_" not in p_name else "Elite Paralympic Anchor",
                 "olympic_image": _GENERAL_ATHLETE_OLYMPIC,
@@ -530,6 +532,7 @@ OUTPUT SCHEMA:
         # Check if AI triggered the 'No direct celebrity match' fallback
         if "no direct celebrity match" in ai_data.archetype_name.lower() or (ai_data.potential_matches and "no direct celebrity match" in ai_data.potential_matches[0].lower()):
             resolved_identity = {
+                "matched_key": top_match_id,
                 "olympic_match": "Anonymous Biometric Match",
                 "paralympic_match": "Anonymous Biometric Match",
                 "olympic_image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop",
@@ -547,8 +550,11 @@ OUTPUT SCHEMA:
         # Onyx Prime Logic: Construct Architect Note
         resolved_name = resolved_identity["paralympic_match"] if user_biometrics.is_paralympic else resolved_identity["olympic_match"]
 
+        # [PIVOT] Override archetype_name to the context-specific title
+        pivoted_archetype_name = resolved_name
+
         # Sanitize Athlete_ placeholders that may leak from the historical dataset context
-        _clean = lambda s: re.sub(r'\bAthlete_\w*', resolved_name, s) if s else s
+        _clean = lambda s: re.sub(r'\bAthlete_\w*', pivoted_archetype_name, s) if s else s
         ai_data.insight_text = _clean(ai_data.insight_text)
         # Filter placeholders and deduplicate
         ai_data.potential_matches = list(dict.fromkeys(
@@ -578,17 +584,16 @@ OUTPUT SCHEMA:
             architect_note = "Structural Congruence detected. " + architect_note
 
         # 5. Z-Score Visualization Mapping
+        # [SECURITY] Use the matched_key (blueprint slug) for reliable Z-score lookup
+        matched_blueprint_key = resolved_identity.get("matched_key", top_match_id)
+        
         def sanitize(text: str) -> str:
             if not text: return ""
             return str(text).lower().replace("_", "").replace("-", "").strip()
 
-        sanitized_key = sanitize(ai_data.archetype_name)
+        sanitized_key = sanitize(matched_blueprint_key)
         archetype_data = self.normalized_df[self.df['sanitized_archetype'] == sanitized_key]
-        if archetype_data.empty:
-            keywords = [sanitize(k) for k in ai_data.archetype_name.split()]
-            mask = self.df['sanitized_archetype'].str.contains('|'.join(keywords))
-            archetype_data = self.normalized_df[mask]
-            
+        
         if not archetype_data.empty:
             avg_z = archetype_data.mean()
             archetype_z_obj = BiometricZScores(
@@ -601,13 +606,13 @@ OUTPUT SCHEMA:
             
         final_output = EngineOutput(
             archetype_match=ArchetypeMatch(
-                archetype_name=ai_data.archetype_name,
+                archetype_name=pivoted_archetype_name,
                 confidence_score=ai_data.confidence_score,
                 shared_traits=ai_data.shared_traits
             ),
             atlas_insight=AtlasInsight(
                 insight_text=ai_data.insight_text,
-                matched_archetype=ai_data.archetype_name
+                matched_archetype=pivoted_archetype_name
             ),
             user_z_scores=user_z_obj,
             archetype_z_scores=archetype_z_obj,
