@@ -22,15 +22,17 @@ def test_run_atlas_test():
             sport="TBD", year=2026, is_paralympic=False
         )
 
-        # Profile 3: The Kinetic Lever (Proportion)
-        # Target: 192-210cm / Wingspan 220-240cm (Ratio > 1.15)
-        lever_profile = AthleteBiometrics(
-            athlete_id=3, name="Lever_Sigma", height_cm=198.0, weight_kg=85.0, wingspan_cm=235.0,
+        # Profile 3: The Aquatic Glider (Fluid Dynamics)
+        # Target: 195-210cm / Wingspan 205-225cm (Ratio ~1.04)
+        # Initials: MP (Michael Phelps)
+        glider_profile = AthleteBiometrics(
+            athlete_id=3, name="Fluid_Sigma", height_cm=198.0, weight_kg=90.0, wingspan_cm=206.0,
             sport="TBD", year=2026, is_paralympic=False
         )
 
         # Profile 4: The Agile Tactician (Precision)
         # Target: 181-184cm / 71-75kg (Lock at 183cm)
+        # Initials: LK (Lee Kiefer)
         tactician_profile = AthleteBiometrics(
             athlete_id=4, name="Precision_Omega", height_cm=183.0, weight_kg=73.0, wingspan_cm=193.0,
             sport="TBD", year=2026, is_paralympic=False
@@ -39,7 +41,7 @@ def test_run_atlas_test():
         test_cases = [
             ("Aerobic Engine", aerobic_profile),
             ("Powerhouse", power_profile),
-            ("Kinetic Lever", lever_profile),
+            ("Aquatic Glider", glider_profile),
             ("Agile Tactician", tactician_profile)
         ]
         

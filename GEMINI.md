@@ -6,7 +6,8 @@ This project is for the Team USA Hackathon.
 ## Tech Stack
 For a full list of dependencies and versions, please refer to [requirements.txt](./requirements.txt).
 - **Primary Framework:** FastAPI
-- **Core AI:** Gemini 1.5 Pro / Gemini 1.5 Flash
+- **Core AI:** Gemini 2.5 Flash (Onyx Prime) / Gemini 2.5 Pro (Relay Protocol)
+- **Architecture:** 100% Google Cloud (Vertex AI + Gemini API)
 
 ## UI/UX Guidelines
 - **Vibe:** Minimalist technical handbook.

@@ -5,11 +5,14 @@ $Region = "us-central1"
 Write-Host "Rowen: 'Initiating orbital uplink to Google Cloud Run...'" -ForegroundColor Cyan
 
 # Deploy to Cloud Run as requested
+$Project = gcloud config get-value project
+
 gcloud run deploy $ServiceName `
     --source . `
     --region $Region `
     --allow-unauthenticated `
     --set-secrets=GOOGLE_API_KEY=GEMINI_API_KEY:latest `
+    --set-env-vars PROJECT_ID=$Project `
     --max-instances 1 `
     --min-instances 0
 

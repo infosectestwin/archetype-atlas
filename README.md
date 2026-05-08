@@ -13,7 +13,11 @@ The Archetype Atlas is a high-fidelity synthesis engine designed to bridge the b
 ## The Core Engine: Grounding & Z-Score Normalization
 The engine does not rely on simple comparisons. It utilizes **Onyx Protocol Z-Score Normalization** to guide the AI synthesis.
 
-- **The Grounding Mechanism:** Before Gemini 1.5 Flash generates a single word, the Python core calculates the mathematical "distance" between the user and 5,000 elite profiles. This weighted Euclidean proximity serves as the immutable "Grounding" for the AI, preventing archetype drift and ensuring technical accuracy.
+- **The Grounding Mechanism:** Before **Gemini 2.5 Flash** (via Vertex AI) generates a single word, the Python core calculates the mathematical "distance" between the user and 5,000 elite profiles. This weighted Euclidean proximity serves as the immutable "Grounding" for the AI, preventing archetype drift and ensuring technical accuracy.
+- **The Onyx Hierarchy:** A robust 3-tier failover system ensures 100% stability.
+    - **Tier 1 (Onyx Prime):** Gemini 2.5 Flash via Google Vertex AI.
+    - **Tier 2 (Relay Protocol):** Gemini 2.5 Pro via Google Gemini API.
+    - **Tier 3 (Core Protocol):** Gemini 2.5 Flash via Google Gemini API.
 - **Weighted Specificity:** For athletes above 185cm, the engine applies a 1.5x multiplier to the Weight parameter to distinguish between the lean profiles of Track & Field and the mass-heavy profiles of Swimming.
 - **Wingspan Ratio:** A primary feature used to identify "Kinetic Levers"—athletes whose structural reach exceeds their stature by a significant margin.
 

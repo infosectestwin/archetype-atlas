@@ -328,7 +328,7 @@ class AtlasEngine:
         if parsed_response is None and self.gemini_client:
             try:
                 response = self.gemini_client.models.generate_content(
-                    model="gemini-1.5-flash-001",
+                    model="gemini-2.5-pro",
                     contents=prompt,
                     config={
                         "system_instruction": system_instruction,
@@ -348,7 +348,7 @@ class AtlasEngine:
         if parsed_response is None and self.backup_client:
             try:
                 response = self.backup_client.models.generate_content(
-                    model="gemini-1.5-flash",
+                    model="gemini-2.5-flash",
                     contents=prompt,
                     config={
                         "system_instruction": system_instruction,
