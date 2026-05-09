@@ -37,17 +37,23 @@ The Atlas has been surgically calibrated against known elite biometric parities:
 
 *Similarity scores represent the biometric proximity to the archetype's statistical mean. Scores >80% indicate high-confidence functional alignment with the mechanical blueprint.*
 
-## Stateless & Privacy-First Security Architecture (v1.2 Stable)
-The Atlas is built on a "Zero-Retention" foundation, prioritizing user privacy and data compliance:
+## Biometric Inference Engine (Science & Accuracy)
+The Archetype Atlas utilizes a surgically calibrated **Biometric Inference Engine** to identify parity between athletes.
 
-- **Privacy-First Design:** Archetype Atlas utilizes a synthetic 120-year US biometric dataset, processed to ensure 0% PII exposure while maintaining 100% mechanical accuracy.
-- **Anonymous Biometric Matches:** Specific athlete names are stripped from all outputs and replaced with Generic Archetype Titles based purely on biometric data (e.g., 'Elite Hydrodynamic Swimmer').
-- **PII Masking:** The engine ignores all 'Name' columns in the source data, utilizing only Anonymized UUIDs for statistical grounding.
-- **Google Cloud Run:** The application exists as a stateless containerized service. No user biometrics are persisted after the synthesis cycle completes.
-- **Secret Manager:** API credentials (GOOGLE_API_KEY) are never stored in the codebase or environment files.
-- **Ephemeral Infrastructure:** Each request is an isolated event, ensuring a clean slate and maximum privacy for the Onyx Protocol.
+- **The Driving Metric (Ape Index):** The core differentiator is the **Ape Index**, defined as:
+  $$\text{Ape Index} = \frac{\text{Wingspan}}{\text{Height}}$$
+  This ratio serves as the mathematical foundation for determining mechanical reach and functional leverage across scales.
+- **Euclidean Grounding:** The engine performs a **Z-score normalized Euclidean distance** calculation against a synthetic 120-year US athletic dataset. This ensures that every AI-generated insight is grounded in immutable biometric proximity rather than speculative inference.
+- **Onyx Protocol v1.2:** By utilizing Z-score normalization, the Atlas accounts for standard deviations within each physical trait, allowing for precise matching between the high-torque profiles of a powerlifter and the explosive biometrics of a gymnast.
 
-## Local Setup
+## Privacy-First Disclosure (Zero PII Policy)
+To ensure absolute user privacy and zero PII (Personally Identifiable Information) exposure, the Atlas operates under a strictly anonymous protocol:
+
+- **Reference IDs:** All historical references are mapped to anonymized **Reference IDs** (e.g., Athlete_4024 or USA-4024). 
+- **Biometric Categorization:** Profiles are categorized purely by **Biometric Archetypes**. No real identity data (names, social handles, or personal histories) is stored, transmitted, or utilized within the synthesis core.
+- **Stateless Execution:** Each request is an isolated, ephemeral event. User data is never persisted.
+
+## Local Setup (v1.2 Stable)
 Ensure you have Python 3.11+ installed.
 
 1. **Clone & Initialize:**
@@ -59,6 +65,8 @@ Ensure you have Python 3.11+ installed.
 2. **Environment Configuration:**
    Create a `.env` file in the root:
    ```env
+   PROJECT_ID=your-gcp-project-id
+   LOCATION=us-central1
    GOOGLE_API_KEY=your_gemini_api_key_here
    ```
 
@@ -81,4 +89,4 @@ Ensure you have Python 3.11+ installed.
    ```
 
 ---
-*Statistical Parity Protocol v1.2.0 // Stable Privacy-First Architecture*
+*Statistical Parity Protocol v1.2.0 // Production Ready*

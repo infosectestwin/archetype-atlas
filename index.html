@@ -426,7 +426,7 @@
     </main>
 
     <footer class="mt-12 text-[9px] text-neutral-700 uppercase tracking-widest text-center">
-        Statistical Parity Protocol v1.0.4 // Zero Retention Policy Active
+        Statistical Parity Protocol v1.2.0 // Zero PII Disclosure Active
     </footer>
 
     <script>
@@ -635,9 +635,13 @@
                     }
 
                     // [PIVOT] Archetype header blueprint box: initials from context-specific name
-                    const initials = name => (name || "")
-                        .split(/\s+/).filter(Boolean)
-                        .map(w => w[0]).join('').toUpperCase().slice(0, 3) || "—";
+                    const initials = name => {
+                        if (!name) return "—";
+                        // [SECURITY LOCKDOWN] If it's a USA-ID, return the numeric suffix for the box
+                        if (name.startsWith("USA-")) return name.split("-")[1] || name;
+                        return name.split(/\s+/).filter(Boolean)
+                            .map(w => w[0]).join('').toUpperCase().slice(0, 3);
+                    };
 
                     const bpEl = document.getElementById('archetypeBlueprintName');
                     if (bpEl) bpEl.innerText = initials(archName);

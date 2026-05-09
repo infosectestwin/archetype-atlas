@@ -96,6 +96,7 @@ class AtlasEngine:
         
         # 1. Environment Isolation: Fail Fast Check
         self.project_id = os.getenv("PROJECT_ID") or os.getenv("GOOGLE_CLOUD_PROJECT")
+        self.location = os.getenv("LOCATION", "us-central1")
         if not self.project_id:
             raise RuntimeError("CRITICAL: GCP Project ID not detected in environment variables (PROJECT_ID or GOOGLE_CLOUD_PROJECT).")
             
@@ -144,9 +145,9 @@ class AtlasEngine:
         # [Tier 1] Attempt Vertex AI Initialization (Node: Onyx Prime)
         # Using gemini-2.5-flash in us-central1 as the stable advanced model.
         try:
-            vertexai.init(project=self.project_id, location="us-central1")
+            vertexai.init(project=self.project_id, location=self.location)
             self.vertex_model = GenerativeModel("gemini-2.5-flash")
-            print(f"Rowen: 'Node: Onyx Prime (Vertex AI) initialized in [us-central1] for project: {self.project_id}. Model: gemini-2.5-flash.'")
+            print(f"Rowen: 'Node: Onyx Prime (Vertex AI) initialized in [{self.location}] for project: {self.project_id}. Model: gemini-2.5-flash.'")
         except Exception as e:
             print(f"Rowen: 'Onyx Prime initialization bypassed. Error: {e}'")
 
@@ -283,13 +284,13 @@ class AtlasEngine:
             }
         else:
             # Safety Net: Euclidean Anchors + General Athlete images
-            o_name = olympic_anchor['name'] if olympic_anchor is not None else "Historical Profile Verified"
-            p_name = paralympic_anchor['name'] if paralympic_anchor is not None else "Historical Profile Verified"
-            print(f"Rowen: '[Identity] WARNING — no HOF match for \"{archetype_name}\" (normalized: \"{normalized_key}\"). Using General Athlete fallback.'")
+            o_id = f"USA-{olympic_anchor['athlete_id']}" if olympic_anchor is not None else "Historical Profile Verified"
+            p_id = f"USA-{paralympic_anchor['athlete_id']}" if paralympic_anchor is not None else "Historical Profile Verified"
+            print(f"Rowen: '[Identity] WARNING — no HOF match for \"{archetype_name}\" (normalized: \"{normalized_key}\"). Using Anonymized ID fallback.'")
             return {
                 "matched_key": top_match_id,
-                "olympic_match": o_name if "Athlete_" not in o_name else "Elite Olympic Anchor",
-                "paralympic_match": p_name if "Athlete_" not in p_name else "Elite Paralympic Anchor",
+                "olympic_match": o_id,
+                "paralympic_match": p_id,
                 "olympic_image": _GENERAL_ATHLETE_OLYMPIC,
                 "paralympic_image": _GENERAL_ATHLETE_PARALYMPIC,
                 "note": "Shared biomechanical lineage confirmed via Euclidean proximity."
@@ -452,9 +453,10 @@ class AtlasEngine:
         for _, row in neighbors.iterrows():
             status = "Paralympic" if row.get('is_paralympic', False) else "Olympic"
             sport_info = row.get('sport', 'Historical Archive Data')
-            name_info = row.get('name', 'Anonymous Athlete')
+            # [SECURITY LOCKDOWN] USA-ID format for zero PII exposure
+            anonymized_id = f"USA-{row['athlete_id']}"
             context_lines.append(
-                f"- {name_info} ({status}): {sport_info}, {row['archetype']}, "
+                f"- {anonymized_id} ({status}): {sport_info}, {row['archetype']}, "
                 f"Height: {row['height_cm']}cm, Weight: {row['weight_kg']}kg, Wingspan: {row['wingspan_cm']}cm"
             )
         context_str = "\n".join(context_lines)
